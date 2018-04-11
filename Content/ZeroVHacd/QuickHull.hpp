@@ -14,5 +14,22 @@ public:
 
   Real ComputeVolume();
 
+  void BakeHull();
+
+  struct Edge
+  {
+    size_t mFaceIndex;
+    size_t mTwinIndex;
+    size_t mVertexIndex;
+  };
+  struct Face
+  {
+    Array<size_t> mEdges;
+  };
+
+  Array<Real3> mVertices;
+  Array<Edge> mEdges;
+  Array<Face> mFaces;
+
   Zilch::HandleOf<ZeroEngine::QuickHull3D> mQuickHull;
 };

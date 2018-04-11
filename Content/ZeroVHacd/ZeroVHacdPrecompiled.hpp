@@ -12,6 +12,7 @@ using Zilch::Real;
 using Zilch::Real2;
 using Zilch::Real3;
 using Zilch::Real4;
+using Zero::Array;
 
 using ZeroEngine::Mesh;
 #include "Shapes.hpp"
@@ -32,4 +33,5 @@ ZilchDeclareStaticLibraryAndPlugin(ZeroVHacdLibrary, ZeroVHacdPlugin);
 #include "Intersection.hpp"
 #include "QuickHull.hpp"
 #include "ExtraMath.hpp"
+#include "TriangleMesh.hpp"
 // Auto Includes (used by Visual Studio plugins, do not remove this line)

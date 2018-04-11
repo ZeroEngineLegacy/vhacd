@@ -123,6 +123,7 @@ EXIT 0
     <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="QuickHull.cpp" />
     <ClCompile Include="Shapes.cpp" />
+    <ClCompile Include="TriangleMesh.cpp" />
     <ClCompile Include="VHacd.cpp" />
     <ClCompile Include="Voxelizer.cpp" />
     <ClCompile Include="ZeroVHacd.cpp" />
@@ -136,6 +137,7 @@ EXIT 0
     <ClInclude Include="Intersection.hpp" />
     <ClInclude Include="QuickHull.hpp" />
     <ClInclude Include="Shapes.hpp" />
+    <ClInclude Include="TriangleMesh.hpp" />
     <ClInclude Include="VHacd.hpp" />
     <ClInclude Include="Voxelizer.hpp" />
     <ClInclude Include="ZeroVHacd.hpp" />

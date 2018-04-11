@@ -28,6 +28,9 @@
     <ClCompile Include="QuickHull.cpp">
       <Filter>Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="TriangleMesh.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Versions\$(OS)-$(PlatformShortName)-$(ZeroVersion)\ZeroEngine.hpp">
@@ -61,6 +64,9 @@
       <Filter>Plugin</Filter>
     </ClInclude>
     <ClInclude Include="ExtraMath.hpp">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh.hpp">
       <Filter>Plugin</Filter>
     </ClInclude>
   </ItemGroup>
