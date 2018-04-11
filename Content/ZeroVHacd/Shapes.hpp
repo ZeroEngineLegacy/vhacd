@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------Aabb
 class Aabb
 {
 public:
@@ -38,6 +39,7 @@ public:
   Real3 mMax;
 };
 
+//-----------------------------------------------------------------------------Triangle
 class Triangle
 {
 public:
@@ -52,6 +54,7 @@ public:
   Real3 mP2;
 };
 
+//-----------------------------------------------------------------------------SupportShape
 class SupportShape
 {
 public:
@@ -61,6 +64,7 @@ public:
   virtual void GetEdges(Zero::Array<Real3>& edges) = 0;
 };
 
+//-----------------------------------------------------------------------------AabbShape
 class AabbShape : public SupportShape
 {
 public:
@@ -71,6 +75,7 @@ public:
   Aabb mAabb;
 };
 
+//-----------------------------------------------------------------------------TriangleShape
 class TriangleShape : public SupportShape
 {
 public:

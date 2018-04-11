@@ -47,18 +47,6 @@ float Aabb::GetSurfaceArea() const
   return surfaceArea;
 }
 
-//void Aabb::Compute(const std::vector<Real3>& points)
-//{
-//  mMin.Splat(Math::PositiveMax());
-//  mMax.Splat(Math::NegativeMin());
-//  for (size_t i = 0; i < points.size(); ++i)
-//  {
-//    const Vector3& point = points[i];
-//    mMin = Math::Min(mMin, point);
-//    mMax = Math::Max(mMax, point);
-//  }
-//}
-
 bool Aabb::Contains(const Aabb& aabb) const
 {
   // If a min is less than our min or a max is greater than our
@@ -102,27 +90,6 @@ bool Aabb::Compare(const Aabb& rhs, float epsilon) const
   return pos1Diff < epsilon && pos2Diff < epsilon;
 }
 
-//void Aabb::Transform(const Matrix4& transform)
-//{
-//  /******Student:Assignment2******/
-//  // Compute aabb of the this aabb after it is transformed.
-//  // You should use the optimize method discussed in class (not transforming all 8 points).
-//  //Matrix3 rotationScale = Math::ToMatrix3(transform);
-//  //for (size_t y = 0; y < 3; ++y)
-//  //  for (size_t x = 0; x < 3; ++x)
-//  //    rotationScale[y][x] = Math::Abs(rotationScale[y][x]);
-//  //
-//  //Real3 center = GetCenter();
-//  //Real3 halfExtent = GetHalfSize();
-//  //
-//  //halfExtent = Math::Transform(rotationScale, halfExtent);
-//  //center = Math::TransformPoint(transform, center);
-//  //
-//  //mMin = center - halfExtent;
-//  //mMax = center + halfExtent;
-//
-//}
-
 Real3 Aabb::GetMin() const
 {
   return mMin;
@@ -148,8 +115,7 @@ Real3 Aabb::GetHalfSize() const
   return (mMax - mMin) * 0.5f;
 }
 
-
-
+//-----------------------------------------------------------------------------AabbShape
 Real3 AabbShape::Support(const Real3& searchDir)
 {
   Real3 c = mAabb.GetCenter();
@@ -178,6 +144,7 @@ void AabbShape::GetEdges(Zero::Array<Real3>& edges)
   edges.PushBack(Real3::cZAxis);
 }
 
+//-----------------------------------------------------------------------------TriangleShape
 Real3 TriangleShape::Support(const Real3& searchDir)
 {
   Real maxDistance = -Math::PositiveMax();
@@ -195,23 +162,6 @@ Real3 TriangleShape::Support(const Real3& searchDir)
   }
 
   return points[bestIndex];
-
- // Real d0 = Math::Dot(searchDir, mTri.mP0);
- // Real d1 = Math::Dot(searchDir, mTri.mP1);
- // Real d2 = Math::Dot(searchDir, mTri.mP2);
- //
- // if (d0 < d1)
- // {
- //   if (d0 < d2)
- //     return mTri.mP0;
- //   else
- //     return mTri.mP2;
- // }
- // else if (d1 < d2)
- // {
- //   return mTri.mP1;
- // }
- // return mTri.mP2;
 }
 
 void TriangleShape::GetFaceNormals(Zero::Array<Real3>& normals)

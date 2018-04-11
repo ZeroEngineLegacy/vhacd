@@ -11,7 +11,7 @@ bool QuickHull::Build(Voxelizer& voxelizer)
   Real3 size = voxelizer.mAabb.GetHalfSize() * 2;
   Real3 delta = size / ToReal3(voxelizer.mSubDivisions);
   Real3 start = voxelizer.mAabb.mMin;
-  Real3 halfOffset = Real3(0.5) * delta;// / this.SubDivisions;
+  Real3 halfOffset = Real3(0.5) * delta;
   Real3 offset = halfOffset;
 
   for (int z = 0; z < voxelizer.mSubDivisions.z; ++z)
@@ -22,18 +22,13 @@ bool QuickHull::Build(Voxelizer& voxelizer)
       offset.y = delta.y * y + halfOffset.y;
       for (int x = 0; x < voxelizer.mSubDivisions.x; ++x)
       {
-        //offset.X = (x + halfOffset.X) / this.SubDivisions.X;
         offset.x = delta.x * x + halfOffset.x;
-        //offset.X += delta.X;
 
         Real3 voxelCenter = start + offset;
 
-        //var voxelAabb = Aabb(start + offset, halfOffset * 0.25);
         Integer3 voxelCoord = Integer3(x, y, z);
         VoxelState::Enum voxel = voxelizer.GetVoxel(voxelCoord);
-        //var shape = DebugObb(voxelAabb);
-        //var alpha = 0.1;
-        //shape.Filled = true;
+
         if (voxel == VoxelState::Surface)
         {
           Real3 min = voxelCenter - voxelizer.mVoxelSize * 0.5;
@@ -46,7 +41,6 @@ bool QuickHull::Build(Voxelizer& voxelizer)
           quickHull->Add(Real3(max.x, min.y, max.z));
           quickHull->Add(Real3(max.x, max.y, min.z));
           quickHull->Add(Real3(max.x, max.y, max.z));
-          //quickHull->Add(voxelCenter);
         }
       }
     }

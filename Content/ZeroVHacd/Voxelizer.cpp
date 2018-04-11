@@ -19,12 +19,10 @@ void Voxelizer::WriteTriangle(const Triangle& tri)
   Integer3 indexA = Discretize(tri.mP0);
   Integer3 indexB = Discretize(tri.mP1);
   Integer3 indexC = Discretize(tri.mP2);
-  // Need to actual SAT
+
   Integer3 start = Math::Min(Math::Min(indexA, indexB), indexC);
   Integer3 end = Math::Max(Math::Max(indexA, indexB), indexC);
 
-  //DebugDraw.Add(DebugTriangle(pointA, pointB, pointC));
-  //Console.WriteLine("Triangle(Real3`pointA`, Real3`pointB`, Real3`pointC`)");
   for(int z = start.z; z <= end.z; ++z)
   {
     for(int y = start.y; y <= end.y; ++y)
