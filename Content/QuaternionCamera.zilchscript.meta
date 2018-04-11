@@ -1,0 +1,17 @@
+[Version:1]
+TextContent 
+{
+	ContentTags 
+	{
+		var Tags = Array
+		{
+			"Sample3DCamera[1.0]"
+			"Camera"
+		}
+	}
+	ZilchScriptBuilder 
+	{
+		var Name = "QuaternionCamera"
+		var ResourceId = 0x5814a9f1c12ec863
+	}
+}

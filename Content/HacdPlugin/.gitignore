@@ -1,0 +1,7 @@
+syntax: glob
+
+Debug/
+Release/
+Versions/
+ipch/
+*.db

@@ -1,0 +1,8 @@
+[Version:1]
+ContentLibrary 
+{
+	var Name = "Hacd"
+	var LibraryId = 0x5a9a0e8ae5251c21
+	var SourceControlType = ""
+	var ReadOnly = false
+}

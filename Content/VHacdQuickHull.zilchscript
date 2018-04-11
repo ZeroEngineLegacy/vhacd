@@ -1,0 +1,52 @@
+class VHacdQuickHull
+{
+  var Hull : QuickHull3D = QuickHull3D();
+  
+  function Initialize(init : CogInitializer)
+  {
+    //Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+  }
+
+  function OnLogicUpdate(event : UpdateEvent)
+  {
+  }
+  
+  function Add(point : Real3)
+  {
+    this.Hull.Add(point);
+  }
+  
+  function Build()
+  {
+    this.Hull.Build();
+  }
+  
+  function Clear()
+  {
+    this.Hull.Clear();
+  }
+  
+  function GetVolume() : Real
+  {
+    var mesh = this.Hull.Mesh;
+    var volume = 0.0;
+    foreach(var face in mesh.Faces)
+    {
+      for(var i = 2; i < face.Edges.Count; ++i)
+      {
+        var e0 = mesh.Edges[face.Edges[0]];
+        var e1 = mesh.Edges[face.Edges[i - 1]];
+        var e2 = mesh.Edges[face.Edges[i]];
+        
+        var p0 = mesh.Vertices[e0.VertexIndex];
+        var p1 = mesh.Vertices[e1.VertexIndex];
+        var p2 = mesh.Vertices[e2.VertexIndex];
+        
+        var m = Real3x3(p0.X, p0.Y, p0.Z, p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z);
+        var subVolume = Math.Determinant(m) / 6;
+        volume += subVolume;
+      }
+    }
+    return volume;
+  }
+}

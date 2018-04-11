@@ -1,0 +1,132 @@
+class HacdScript : ZilchComponent
+{
+  [Dependency] var Model : Model;
+  [Property] var Active : Boolean = true;
+  [Property] var AutoDebugDraw : Boolean = false;
+  [Property] var DrawTriangles : Boolean = true;
+  [Property] var DrawEdges : Boolean = true;
+  [Property] var DrawWireFrame : Boolean = true;
+  
+  var OriginalMesh : Mesh;
+  var GraphicsMesh : Mesh;
+  var PhysicsMesh : MultiConvexMesh = MultiConvexMesh.CreateRuntime();
+  
+  function Initialize(init : CogInitializer)
+  {
+    if(!this.Active)
+      return;
+      
+    this.OriginalMesh = this.Owner.Model.Mesh;
+    Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    Zero.Connect(Zero.Keyboard, Events.KeyDown, this.OnKeyDown);
+  }
+
+  function OnKeyDown(event : KeyboardEvent)
+  {
+    if(event.Key == Keys.Enter)
+    {
+      
+      var toSend = HacdPluginEvent();
+      toSend.Mesh = this.OriginalMesh;
+      toSend.PhysicsMesh = this.PhysicsMesh;
+      timeout(1000)
+        this.Owner.DispatchEvent("Compute", toSend);
+      this.Owner.MultiConvexMeshCollider.Mesh = toSend.PhysicsMesh;
+      
+      this.Draw();
+      this.PhysicsToGraphicsMesh();
+      this.Owner.Model.Mesh = this.GraphicsMesh;
+    }
+    if(event.Key == Keys.T)
+    {
+      this.ToggleGraphicsMesh();
+    }
+  }
+
+  function OnLogicUpdate(event : UpdateEvent)
+  {
+    //this.Draw();
+  }
+  
+  function ToggleGraphicsMesh()
+  {
+    if(this.Owner.Model.Mesh == this.GraphicsMesh)
+      this.Owner.Model.Mesh = this.OriginalMesh;
+    else
+      this.Owner.Model.Mesh = this.GraphicsMesh;
+  }
+  
+  function PhysicsToGraphicsMesh()
+  {
+    this.GraphicsMesh = Mesh.CreateRuntime();
+    
+    var vertices = this.GraphicsMesh.Vertices;
+    vertices.AddAttribute(VertexSemantic.Position, VertexElementType.Real, 3);
+    foreach(var point in this.PhysicsMesh.Vertices)
+    {
+      vertices.AddReal(point);
+    }
+    
+    var indices = this.GraphicsMesh.Indices;
+    foreach(var subMesh in this.PhysicsMesh.SubMeshes)
+    {
+      foreach(var index in subMesh.TriangleIndices)
+      {
+        indices.Add(index);
+      }
+    }
+    this.GraphicsMesh.Upload();
+  }
+  
+  function Draw()
+  {
+    var transform = this.Owner.Transform.WorldMatrix;
+    
+    var worldVertices = Array[Real3]();
+    foreach(var vertex in this.PhysicsMesh.Vertices)
+    {
+      worldVertices.Add(Math.MultiplyPoint(transform, vertex));
+    }
+    
+    var color = Colors.Lime;
+    color.W = 0.5;
+    
+    foreach(var subMesh in this.PhysicsMesh.SubMeshes)
+    {
+      
+      for(var i = 0; i < subMesh.TriangleIndices.Count; i += 3)
+      {
+        
+        var i0 = subMesh.TriangleIndices[i + 0];
+        var i1 = subMesh.TriangleIndices[i + 1];
+        var i2 = subMesh.TriangleIndices[i + 2];
+        
+        var p0 = worldVertices[i0];
+        var p1 = worldVertices[i1];
+        var p2 = worldVertices[i2];
+        var center = (p0 + p1 + p2) / 3;
+        var iP0 = Math.Lerp(p0, center, 0.1);
+        var iP1 = Math.Lerp(p1, center, 0.1);
+        var iP2 = Math.Lerp(p2, center, 0.1);
+        //iP0 = p0;
+        //iP1 = p1;
+        //iP2 = p2;
+        
+        
+        if(this.DrawTriangles)
+          DebugDraw.Add(DebugTriangle(iP0, iP1, iP2) {Color = color, Filled = true});
+        if(this.DrawEdges)
+        {
+          DebugDraw.Add(DebugLine(p0, p1) {Color = Colors.Black});
+          DebugDraw.Add(DebugLine(p1, p2) {Color = Colors.Black});
+          DebugDraw.Add(DebugLine(p2, p0) {Color = Colors.Black});
+        }
+        
+      }
+    }
+    
+    
+    if(this.AutoDebugDraw)
+      this.Owner.MultiConvexMeshCollider.DebugDraw();
+  }
+}

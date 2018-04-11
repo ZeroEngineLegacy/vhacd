@@ -1,0 +1,114 @@
+class SupportShape
+{
+  [Virtual]
+  function Support(searchDir : Real3) : Real3
+  {
+    return Real3();
+  }
+  
+  [Virtual]
+  function GetFaceNormals() : Array[Real3]
+  {
+    return Array[Real3]();
+  }
+  
+  [Virtual]
+  function GetEdges() : Array[Real3]
+  {
+    return Array[Real3]();
+  }
+}
+
+class AabbShape : SupportShape
+{
+  var Aabb : Aabb;
+  
+  [Override]
+  function Support(searchDir : Real3) : Real3
+  {
+    var c = this.Aabb.Center;
+    var e = this.Aabb.HalfExtents;
+    
+    var point = Real3();
+    for(var i = 0; i < 3; ++i)
+    {
+      point[i] = c[i] + e[i] * Math.Sign(searchDir[i]);
+    }
+    
+    return point;
+  }
+  
+  [Virtual]
+  function GetFaceNormals() : Array[Real3]
+  {
+    return Array[Real3]() {Real3.XAxis, Real3.YAxis, Real3.ZAxis};
+  }
+  
+  [Virtual]
+  function GetEdges() : Array[Real3]
+  {
+    return Array[Real3]() {Real3.XAxis, Real3.YAxis, Real3.ZAxis};
+  }
+}
+
+struct Triangle
+{
+  var P0 : Real3;
+  var P1 : Real3;
+  var P2 : Real3;
+  
+  constructor() {}
+  constructor(p0 : Real3, p1 : Real3, p2 : Real3)
+  {
+    this.P0 = p0;
+    this.P1 = p1;
+    this.P2 = p2;
+  }
+  
+  function GetNormal() : Real3
+  {
+    var n = Math.Cross(this.P1 - this.P0, this.P2 - this.P0);
+    return Math.Normalize(n);
+  }
+}
+
+class TriangleShape : SupportShape
+{
+  var Tri : Triangle;
+  
+  [Override]
+  function Support(searchDir : Real3) : Real3
+  {
+    var maxDistance = Real.NegativeMin;
+    
+    var points = Array[Real3]() {this.Tri.P0, this.Tri.P1, this.Tri.P2};
+    var bestIndex = 0;
+    for(var i = 0; i < points.Count; ++i)
+    {
+      var dist = Math.Dot(searchDir, points[i]);
+      if(dist > maxDistance)
+      {
+        maxDistance = dist;
+        bestIndex = i;
+      }
+    }
+    
+    return points[bestIndex];
+  }
+  
+  [Virtual]
+  function GetFaceNormals() : Array[Real3]
+  {
+    return Array[Real3]() {this.Tri.GetNormal()};
+  }
+  
+  [Virtual]
+  function GetEdges() : Array[Real3]
+  {
+    var tri = this.Tri;
+    var edge01 = tri.P1 - tri.P0;
+    var edge12 = tri.P2 - tri.P1;
+    var edge20 = tri.P0 - tri.P2;
+    return Array[Real3]() {edge01, edge12, edge20};
+  }
+}

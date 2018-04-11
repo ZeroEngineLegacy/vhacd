@@ -1,0 +1,451 @@
+enum VoxelState {Unknown, Inside, Outside, Surface}
+
+struct Voxel
+{
+  var State : VoxelState = VoxelState.Unknown;
+}
+
+class Voxelizer
+{
+  var Colors : Array[Real4] = Array[Real4]();
+  
+  var SubDivisions : Integer3 = Integer3(10, 10, 10);
+  var AabbDrawScale : Real = 0.25;
+  
+  var MeshData : MeshData;
+  //var Vertices : Array[Real3] = Array[Real3]();
+  //var Indices : Array[Integer] = Array[Integer]();
+  var TotalAabb : Aabb;
+  var VoxelSize : Real3;
+  
+  var Voxels : Array[Voxel] = Array[Voxel]();
+  var SurfaceVoxels : Array[Integer] = Array[Integer]();
+  
+  var Hull : VHacdQuickHull = VHacdQuickHull();
+  
+  constructor()
+  {
+    this.Colors.Resize(4);
+    this.SetColors(Colors.White, Colors.Blue, Colors.Red, Colors.Black);
+  }
+  
+  function SetColors(unknownColor : Real4, insideColor : Real4, outsideColor : Real4, surfaceColor : Real4)
+  {
+    this.SetColors(unknownColor, insideColor, outsideColor, surfaceColor, 0.1);
+  }
+  
+  function SetColors(unknownColor : Real4, insideColor : Real4, outsideColor : Real4, surfaceColor : Real4, alpha : Real)
+  {
+    this.Colors[VoxelState.Unknown] = Real4(unknownColor.XYZ, alpha);
+    this.Colors[VoxelState.Inside] = Real4(insideColor.XYZ, alpha);
+    this.Colors[VoxelState.Outside] = Real4(outsideColor.XYZ, alpha);
+    this.Colors[VoxelState.Surface] = Real4(surfaceColor.XYZ, alpha);
+  }
+  
+  function SetMeshData(meshData : MeshData)
+  {
+    this.MeshData = meshData;
+    this.TotalAabb = meshData.Aabb;
+    this.TotalAabb.Extents *= Real3(1.1);
+  }
+  
+  function Voxelize()
+  {
+    var size = this.TotalAabb.Extents;
+    this.VoxelSize = size / this.SubDivisions;
+    
+    this.CreateVoxels();
+    // Find out what voxels have are inside/outside the mesh
+    this.UpdateVoxelsFromMesh();
+  }
+  
+  function ComputeHull()
+  {
+    var size = this.TotalAabb.Extents;
+    var delta = size / this.SubDivisions;
+    var start = this.TotalAabb.Min;
+    var halfOffset = Real3(0.5) * delta;// / this.SubDivisions;
+    var offset = halfOffset;
+    
+    for(var z = 0; z < this.SubDivisions.Z; ++z)
+    {
+      offset.Z = delta.Z * z + halfOffset.Z;
+      for(var y = 0; y < this.SubDivisions.Y; ++y)
+      {
+        offset.Y = delta.Y * y + halfOffset.Y;
+        for(var x = 0; x < this.SubDivisions.X; ++x)
+        {
+          //offset.X = (x + halfOffset.X) / this.SubDivisions.X;
+          offset.X = delta.X * x + halfOffset.X;
+          //offset.X += delta.X;
+          
+          var voxelCenter = start + offset;
+          
+          //var voxelAabb = Aabb(start + offset, halfOffset * 0.25);
+          var voxelCoord = Integer3(x, y, z);
+          var voxel = this.GetVoxel(voxelCoord);
+          //var shape = DebugObb(voxelAabb);
+          //var alpha = 0.1;
+          //shape.Filled = true;
+          if(voxel.State == VoxelState.Surface)
+          {
+            var min = voxelCenter - this.VoxelSize * 0.25;
+            var max = voxelCenter + this.VoxelSize * 0.25;
+            //this.Hull.Add(Real3(min.X, min.Y, min.Z));
+            //this.Hull.Add(Real3(min.X, min.Y, max.Z));
+            //this.Hull.Add(Real3(min.X, max.Y, min.Z));
+            //this.Hull.Add(Real3(min.X, max.Y, max.Z));
+            //this.Hull.Add(Real3(max.X, min.Y, min.Z));
+            //this.Hull.Add(Real3(max.X, min.Y, max.Z));
+            //this.Hull.Add(Real3(max.X, max.Y, min.Z));
+            //this.Hull.Add(Real3(max.X, max.Y, max.Z));
+            this.Hull.Add(voxelCenter);
+          }
+        }
+      }
+    }
+    this.Hull.Build();
+    //this.Owner.QuickHullRenderer.Update(this.Hull);
+  }
+  
+  function CreateVoxels()
+  {
+    this.Voxels.Clear();
+    this.Voxels.Resize(this.SubDivisions.X * this.SubDivisions.Y * this.SubDivisions.Z, Voxel() {State = VoxelState.Unknown});
+  }
+  
+  function Discretize(point : Real3) : Integer3
+  {
+    var t = (point - this.TotalAabb.Min) / (this.TotalAabb.Extents / this.SubDivisions);
+    return Math.Floor(t) as Integer3;
+  }
+  
+  function VoxelCoordToIndex(voxelCoord : Integer3) : Integer
+  {
+    var index = voxelCoord.X;
+    index += voxelCoord.Y * this.SubDivisions.X;
+    index += voxelCoord.Z * (this.SubDivisions.X * this.SubDivisions.Y);
+    return index;
+  }
+  
+  function GetVoxelAabb(voxelCoord : Integer3) : Aabb
+  {
+    var voxelSize = this.VoxelSize;
+    
+    var halfOffset = Real3(0.5) * voxelSize;
+    var start = this.TotalAabb.Min + halfOffset;
+    
+    var center = start + voxelCoord * voxelSize;
+    return Aabb(center, voxelSize * 0.5);
+  }
+  
+  function GetVoxel(voxelCoord : Integer3) : Voxel
+  {
+    var index = this.VoxelCoordToIndex(voxelCoord);
+    return this.Voxels[index];
+  }
+  
+  function SetVoxel(voxelCoord : Integer3, state : VoxelState)
+  {
+    var index = this.VoxelCoordToIndex(voxelCoord);
+    this.Voxels[index] = Voxel() {State = state};
+  }
+  
+  function UpdateVoxelsFromMesh()
+  {
+    // Write the surface of the mesh
+    this.WriteTriangles();
+    // Flood fill the outside of the mesh
+    this.FillOutside();
+    // File the remaining cells
+    this.Fill();
+  }
+  
+  function WriteTriangles()
+  {
+    for(var i = 0; i < this.MeshData.Indices.Count / 3; ++i)
+    {
+      //if(i == 0)
+      this.WriteTriangle(i);
+      //break;
+    }
+  }
+  
+  function WriteTriangle(triangleIndex : Integer)
+  {
+    var startIndex = triangleIndex * 3;
+    var indices = Integer3(startIndex, startIndex + 1, startIndex + 2);
+    
+    indices.X = this.MeshData.Indices[indices.X];
+    indices.Y = this.MeshData.Indices[indices.Y];
+    indices.Z = this.MeshData.Indices[indices.Z];
+    
+    var pointA = this.MeshData.Vertices[indices[0]];
+    var pointB = this.MeshData.Vertices[indices[1]];
+    var pointC = this.MeshData.Vertices[indices[2]];
+    
+    var indexA = this.Discretize(pointA);
+    var indexB = this.Discretize(pointB);
+    var indexC = this.Discretize(pointC);
+    // Need to actual SAT
+    var start = Math.Min(Math.Min(indexA, indexB), indexC);
+    var end = Math.Max(Math.Max(indexA, indexB), indexC);
+    
+    //DebugDraw.Add(DebugTriangle(pointA, pointB, pointC));
+    //Console.WriteLine("Triangle(Real3`pointA`, Real3`pointB`, Real3`pointC`)");
+    for(var z = start.Z; z <= end.Z; ++z)
+    {
+      for(var y = start.Y; y <= end.Y; ++y)
+      {
+        for(var x = start.X; x <= end.X; ++x)
+        {
+          var voxelCoord = Integer3(x, y, z);
+          var voxelAabb = this.GetVoxelAabb(voxelCoord);
+          
+          
+          var intersecting = Intersection.Test(voxelAabb, Triangle(pointA, pointB, pointC));
+          //Console.WriteLine("Aabb.Build(Real3`voxelAabb.Min`, Real3`voxelAabb.Max`)");
+          //voxelAabb.HalfExtents *= this.AabbDrawScale;
+          //var color = Colors.Blue;
+          //if(!intersecting)
+          //  color = Colors.Red;
+          //DebugDraw.Add(DebugObb(voxelAabb) {Color = color});
+          
+          if(!intersecting)
+            continue;
+            
+          var voxelIndex = this.VoxelCoordToIndex(voxelCoord);
+          
+          
+          this.SurfaceVoxels.Add(voxelIndex);
+          this.SetVoxel(voxelCoord, VoxelState.Surface);
+        }
+      }
+    }
+  }
+  
+  function FillOutside()
+  {
+    var visitedSet = HashMap[Integer3, Integer3]();
+    var queue = Array[Integer3]();
+    queue.Add(Integer3());
+    
+    this.FillOutside(queue, visitedSet);
+  }
+  
+  function FillOutside(queue : Array[Integer3], visitedSet : HashMap[Integer3, Integer3])
+  {
+    while(queue.Count != 0)
+    {
+      var voxelCoord = queue.Pop();
+      if(this.GetVoxel(voxelCoord).State != VoxelState.Unknown)
+        continue;
+        
+      this.SetVoxel(voxelCoord, VoxelState.Outside);
+      //Console.WriteLine(voxelCoord);
+      this.AddFillLocation(queue, voxelCoord + Integer3(-1, 0, 0));
+      this.AddFillLocation(queue, voxelCoord + Integer3(0, -1, 0));
+      this.AddFillLocation(queue, voxelCoord + Integer3(0, 0, -1));
+      this.AddFillLocation(queue, voxelCoord + Integer3(1, 0, 0));
+      this.AddFillLocation(queue, voxelCoord + Integer3(0, 1, 0));
+      this.AddFillLocation(queue, voxelCoord + Integer3(0, 0, 1));
+    }
+  }
+  
+  function Split(axisIndex : Integer, axisValue : Real, front : Voxelizer, back : Voxelizer)
+  {
+    var index = this.Discretize(Real3(axisValue));
+    var splitIndex = index[axisIndex];
+    
+    var axis1 = (axisIndex + 1) % 3;
+    var axis2 = (axisIndex + 2) % 3;
+    var subDivisions = Integer3(this.SubDivisions[axisIndex], this.SubDivisions[axis1], this.SubDivisions[axis2]);
+    var crossArea = subDivisions.Y * subDivisions.Z;
+    
+    var frontCount = splitIndex + 1;
+    var backCount = subDivisions.X - frontCount;
+    var voxelsFront = frontCount * crossArea;
+    var voxelsBack = backCount * crossArea;
+    
+    
+    front.SubDivisions[axisIndex] = frontCount;
+    front.SubDivisions[axis1] = this.SubDivisions[axis1];
+    front.SubDivisions[axis2] = this.SubDivisions[axis2];
+    front.VoxelSize = this.VoxelSize;
+    back.SubDivisions[axisIndex] = backCount;
+    back.SubDivisions[axis1] = this.SubDivisions[axis1];
+    back.SubDivisions[axis2] = this.SubDivisions[axis2];
+    back.VoxelSize = this.VoxelSize;
+    
+    front.CreateVoxels();
+    back.CreateVoxels();
+    var frontMin = this.TotalAabb.Min;
+    var frontMax = this.TotalAabb.Max;
+    frontMax[axisIndex] = frontMin[axisIndex] + frontCount * this.VoxelSize[axisIndex];
+    front.TotalAabb = Aabb.Build(frontMin, frontMax);
+    
+    var backMin = this.TotalAabb.Min;
+    var backMax = this.TotalAabb.Max;
+    backMin[axisIndex] = backMax[axisIndex] - backCount * this.VoxelSize[axisIndex];
+    back.TotalAabb = Aabb.Build(backMin, backMax);
+    Console.WriteLine("Sub", this.TotalAabb, backMax[axisIndex], - backCount * this.VoxelSize[axisIndex], this.VoxelSize);
+    
+    for(var z = 0; z < front.SubDivisions.Z; ++z)
+    {
+      for(var y = 0; y < front.SubDivisions.Y; ++y)
+      {
+        for(var x = 0; x < front.SubDivisions.X; ++x)
+        {
+          var voxelCoord = Integer3(x, y, z);
+          front.SetVoxel(voxelCoord, this.GetVoxel(voxelCoord).State);
+        }
+      }
+    }
+    for(var z = 0; z < back.SubDivisions.Z; ++z)
+    {
+      for(var y = 0; y < back.SubDivisions.Y; ++y)
+      {
+        for(var x = 0; x < back.SubDivisions.X; ++x)
+        {
+          var voxelCoord = Integer3(x, y, z);
+          var thisVoxelCoord = voxelCoord;
+          thisVoxelCoord[axisIndex] += frontCount;
+          back.SetVoxel(voxelCoord, this.GetVoxel(thisVoxelCoord).State);
+        }
+      }
+    }
+    
+    for(var v1 = 0; v1 < this.SubDivisions[axis1]; ++ v1)
+    {
+      for(var v2 = 0; v2 < this.SubDivisions[axis2]; ++ v2)
+      {
+        var frontCoord = Integer3();
+        frontCoord[axis1] = v1;
+        frontCoord[axis2] = v2;
+        var backCoord = frontCoord;
+        frontCoord[axisIndex] = splitIndex;
+        backCoord[axisIndex] = 0;
+        
+        if(front.GetVoxel(frontCoord).State == VoxelState.Inside)
+          front.SetVoxel(frontCoord, VoxelState.Surface);
+        if(back.GetVoxel(backCoord).State == VoxelState.Inside)
+          back.SetVoxel(backCoord, VoxelState.Surface);
+      }
+    }
+    
+    Console.WriteLine(axisIndex, axis1, axis2);
+    Console.WriteLine(front.SubDivisions, back.SubDivisions, front.Voxels.Count, back.Voxels.Count);
+    Console.WriteLine(splitIndex, frontCount, backCount, voxelsFront, voxelsBack);
+    Console.WriteLine(this.TotalAabb, front.TotalAabb, back.TotalAabb);
+  }
+  
+  function ComputeVolume() : Real
+  {
+    var count = 0;
+    for(var i = 0; i < this.Voxels.Count; ++i)
+    {
+      var state = this.Voxels[i].State;
+      if(state == VoxelState.Inside || state == VoxelState.Surface)
+        ++count;
+    }
+    
+    var voxelVolume = this.VoxelSize.X * this.VoxelSize.Y * this.VoxelSize.Z;
+    return count * voxelVolume;
+  }
+  
+  function AddFillLocation(queue : Array[Integer3], voxelCoord : Integer3)
+  {
+    
+    var isInvalid = Math.AnyNonZero(voxelCoord < Integer3(0)) || Math.AnyNonZero(this.SubDivisions <= voxelCoord);
+    if(isInvalid)
+      return;
+    queue.Add(voxelCoord);
+  }
+  
+  function Fill()
+  {
+    for(var z = 0; z < this.SubDivisions.Z; ++z)
+    {
+      for(var y = 0; y < this.SubDivisions.Y; ++y)
+      {
+        for(var x = 0; x < this.SubDivisions.X; ++x)
+        {
+          var voxelCoord = Integer3(x, y, z);
+          if(this.GetVoxel(voxelCoord).State == VoxelState.Unknown)
+            this.SetVoxel(voxelCoord, VoxelState.Inside);
+        }
+      }
+    }
+  }
+  
+  function Draw(transform : Real4x4)
+  {
+    if(this.Voxels.Count == 0)
+      return;
+    //this.Hull.Draw();
+    var size = this.TotalAabb.Extents;
+    
+    
+    var delta = size / this.SubDivisions;
+    var start = Math.MultiplyPoint(transform, this.TotalAabb.Min);
+    var halfOffset = Real3(0.5) * delta;// / this.SubDivisions;
+    var offset = halfOffset;
+    
+    //Console.WriteLine(this.Voxels);
+    for(var z = 0; z < this.SubDivisions.Z; ++z)
+    {
+      offset.Z = delta.Z * z + halfOffset.Z;
+      for(var y = 0; y < this.SubDivisions.Y; ++y)
+      {
+        offset.Y = delta.Y * y + halfOffset.Y;
+        for(var x = 0; x < this.SubDivisions.X; ++x)
+        {
+          //offset.X = (x + halfOffset.X) / this.SubDivisions.X;
+          offset.X = delta.X * x + halfOffset.X;
+          //offset.X += delta.X;
+          
+          var voxelAabb = Aabb(start + offset, halfOffset);
+          voxelAabb.HalfExtents *= this.AabbDrawScale;// 0.25;
+          var voxelCoord = Integer3(x, y, z);
+          //voxelAabb = this.GetVoxelAabb(voxelCoord);
+          //voxelAabb.HalfExtents *= 0.25;
+          
+          var voxel = this.GetVoxel(voxelCoord);
+          
+          this.DrawVoxel(voxel, voxelAabb);
+        }
+      }
+    }
+  }
+  
+  function DrawVoxel(voxel : Voxel, voxelAabb : Aabb)
+  {
+    if(voxel.State == VoxelState.Outside)
+      return;
+      
+    var shape = DebugObb(voxelAabb);
+    var alpha = 0.1;
+    shape.Filled = true;
+    shape.Color = this.Colors[voxel.State as Integer];
+    //if(voxel.State == VoxelState.Unknown)
+    //  shape.Color = Real4(Colors.White.XYZ, alpha);
+    //else if(voxel.State == VoxelState.Surface)
+    //{
+    //  shape.Color = Real4(Colors.Black.XYZ, alpha);
+    //  shape.Filled = true;
+    //}
+    //else if(voxel.State == VoxelState.Outside)
+    //{
+    //  debug return;
+    //  shape.Color = Real4(Colors.Red.XYZ, alpha);
+    //  shape.Filled = true;
+    //}
+    //else if(voxel.State == VoxelState.Inside)
+    //{
+    //  shape.Color = Real4(Colors.Blue.XYZ, alpha);
+    //  shape.Filled = true;
+    //}
+    //Console.WriteLine(voxel.State, voxelCoord);
+    DebugDraw.Add(shape);
+  }
+}

@@ -1,0 +1,16 @@
+[Version:1]
+TextContent 
+{
+	ContentTags 
+	{
+		var Tags = Array
+		{
+			"ZilchScript"
+		}
+	}
+	ZilchScriptBuilder 
+	{
+		var Name = "Shapes"
+		var ResourceId = 0x5affbc7d5d1d586c
+	}
+}

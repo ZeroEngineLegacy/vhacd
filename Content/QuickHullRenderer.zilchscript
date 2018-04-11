@@ -1,0 +1,115 @@
+class QuickHullRenderer : ZilchComponent
+{
+  [Dependency] var Model : Model;
+  [Property] var Active : Boolean = true;
+  
+  var Mesh : Mesh = Mesh.CreateRuntime();
+  
+  //function Initialize(init : CogInitializer)
+  //{
+  //  Zero.Connect(this.Owner, Events.QuickHullFinished, this.OnQuickHullFinished);
+  //  Zero.Connect(this.Owner, Events.UpdateHullEdgeStatus, this.OnUpdateHullEdgeStatus);
+  //}
+  //
+  //function OnUpdateHullEdgeStatus(event : BooleanEvent)
+  //{
+  //  this.Active = event.State;
+  //  this.Model.Visible = this.Active;
+  //}
+  
+  function Clear()
+  {
+    // Reset the mesh
+    this.Mesh = Mesh.CreateRuntime();
+    this.Mesh.Indices.Clear();
+    this.Mesh.Vertices.ClearData();
+    this.Mesh.Vertices.ClearAttributes();
+    
+    // Setup the mesh attributes
+    this.Mesh.Vertices.AddAttribute(VertexSemantic.Position, VertexElementType.Real, 3);
+    this.Mesh.Vertices.AddAttribute(VertexSemantic.Normal, VertexElementType.Real, 3);
+  }
+  
+  function Add(quickHull : QuickHull3D)
+  {
+    // Add each vertex, keeping track of the aabb along the way
+    var prevCount = this.Mesh.Vertices.VertexCount;
+    foreach(var vertex in quickHull.Mesh.Vertices)
+    {
+      this.Mesh.Vertices.AddReal(vertex);
+      this.Mesh.Vertices.AddReal(Real3.ZAxis);
+    }
+    
+    // Add each sub-triangle for each face
+    foreach(var face in quickHull.Mesh.Faces)
+    {
+      for(var i = 2; i < face.Edges.Count; ++i)
+      {
+        var e0 = quickHull.Mesh.Edges[face.Edges[0]];
+        var e1 = quickHull.Mesh.Edges[face.Edges[i - 1]];
+        var e2 = quickHull.Mesh.Edges[face.Edges[i]];
+        
+        this.Mesh.Indices {prevCount + e0.VertexIndex, prevCount + e1.VertexIndex, prevCount + e2.VertexIndex};
+      }
+    }
+    
+    // Upload the mesh and make it visible
+    this.Mesh.Upload();
+    this.Model.Visible = true;
+    this.Model.Mesh = this.Mesh;
+    // Temporarily turn off view culling since the aabb is incorrect
+    this.Model.ViewCulling = false;
+  }
+
+  function Update(quickHull : QuickHull3D)
+  {
+    this.Clear();
+    this.Add(quickHull);
+    debug return;
+    
+    
+    // Reset the mesh
+    this.Mesh = Mesh.CreateRuntime();
+    this.Mesh.Indices.Clear();
+    this.Mesh.Vertices.ClearData();
+    this.Mesh.Vertices.ClearAttributes();
+    
+    // Setup the mesh attributes
+    this.Mesh.Vertices.AddAttribute(VertexSemantic.Position, VertexElementType.Real, 3);
+    this.Mesh.Vertices.AddAttribute(VertexSemantic.Normal, VertexElementType.Real, 3);
+    
+    // Add each vertex, keeping track of the aabb along the way
+    var aabb = Aabb();
+    
+    
+    // Add each vertex, keeping track of the aabb along the way
+    
+    foreach(var vertex in quickHull.Mesh.Vertices)
+    {
+      this.Mesh.Vertices.AddReal(vertex);
+      this.Mesh.Vertices.AddReal(Real3.ZAxis);
+    }
+    
+    // Add each sub-triangle for each face
+    foreach(var face in quickHull.Mesh.Faces)
+    {
+      for(var i = 2; i < face.Edges.Count; ++i)
+      {
+        var e0 = quickHull.Mesh.Edges[face.Edges[0]];
+        var e1 = quickHull.Mesh.Edges[face.Edges[i - 1]];
+        var e2 = quickHull.Mesh.Edges[face.Edges[i]];
+        
+        this.Mesh.Indices {e0.VertexIndex, e1.VertexIndex, e2.VertexIndex};
+      }
+    }
+    
+    // Upload the mesh and make it visible
+    this.Mesh.Upload();
+    this.Model.Visible = true;
+    this.Model.Mesh = this.Mesh;
+    // Temporarily turn off view culling since the aabb is incorrect
+    this.Model.ViewCulling = false;
+    //this.Model.LocalAabbCenter = aabb.Center;
+    //this.Model.LocalAabbHalfExtents = aabb.HalfExtents;
+  }
+}

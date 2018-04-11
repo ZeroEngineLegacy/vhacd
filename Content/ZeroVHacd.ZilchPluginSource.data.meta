@@ -1,0 +1,20 @@
+[Version:1]
+DataContent 
+{
+	ZilchPluginBuilder 
+	{
+		var Name = "ZeroVHacd"
+		var ResourceId = 0x5afa2f31afd3fab9
+		var LoaderType = "ZilchPluginSource"
+		var Version = 0
+		var ShowInEditor = true
+		var SharedLibraryResourceId = 0x5afa2f31afd3fabf
+	}
+	ContentTags 
+	{
+		var Tags = Array
+		{
+			"ZilchPluginSource"
+		}
+	}
+}

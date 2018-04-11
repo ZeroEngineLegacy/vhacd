@@ -1,0 +1,9 @@
+[Version:1]
+TextContent 
+{
+	ZilchFragmentBuilder 
+	{
+		var Name = "SolidWireframe"
+		var ResourceId = 0x5a9acde60c346062
+	}
+}

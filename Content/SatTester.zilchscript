@@ -1,0 +1,41 @@
+class SatTester : ZilchComponent
+{
+  [Property] var Aabb : Aabb;
+  var Triangle : Triangle;
+  
+  [Static][Extension(typeid(Aabb))]
+  function Build(min : Real3, max : Real3) : Aabb
+  {
+    return Aabb() {Min = min, Max = max};
+  }
+  
+  function Initialize(init : CogInitializer)
+  {
+    
+    this.Aabb = Aabb(Real3(), Real3(1));
+    
+    this.Triangle = Triangle(Real3(-0.5, 0.5, 0.5), Real3(-0.5, -0.5, -0.5), Real3(-0.5, -0.5, 0.5));
+    this.Aabb = Aabb.Build(Real3(-0.85, -0.85, -0.85), Real3(-0.283333, -0.283333, -0.283333));
+    //this.Aabb.Center += Real3(0, 1, 0);
+    //this.Aabb = Aabb.Build(Real3(-0.85, -0.283333, -0.85), Real3(-0.283333, 0.283333, -0.283333));
+    //this.Aabb = Aabb.Build(Real3(-0.85, 0.283333, -0.85), Real3(-0.283333, 0.85, -0.283333));
+    //this.Aabb = Aabb.Build(Real3(-0.85, -0.85, -0.283333), Real3(-0.283333, -0.283333, 0.283333));
+    //this.Aabb = Aabb.Build(Real3(-0.85, -0.283333, -0.283333), Real3(-0.283333, 0.283333, 0.283333));
+    //this.Aabb = Aabb.Build(Real3(-0.85, 0.283333, -0.283333), Real3(-0.283333, 0.85, 0.283333));
+    //this.Aabb = Aabb.Build(Real3(-0.85, -0.85, 0.283333), Real3(-0.283333, -0.283333, 0.85));
+    //this.Aabb = Aabb.Build(Real3(-0.85, -0.283333, 0.283333), Real3(-0.283333, 0.283333, 0.85));
+    //this.Aabb = Aabb.Build(Real3(-0.85, 0.283333, 0.283333), Real3(-0.283333, 0.85, 0.85));
+    //this.Triangle.P0 = 
+    Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+  }
+
+  function OnLogicUpdate(event : UpdateEvent)
+  {
+    //DebugDraw.Add(DebugObb(this.Aabb));
+    
+    DebugDraw.Add(DebugObb(this.Aabb));
+    DebugDraw.Add(DebugTriangle(this.Triangle.P0, this.Triangle.P1, this.Triangle.P2));
+    
+    Console.WriteLine(Intersection.Test(this.Aabb, this.Triangle));
+  }
+}

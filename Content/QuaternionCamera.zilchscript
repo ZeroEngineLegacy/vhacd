@@ -1,0 +1,196 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright 2017 DigiPen USA Corporation, All Rights Reserved
+// Author: Zero Engine Team
+// Last updated by: Arend Danielek
+// Last update: 1/5/2017
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// First person camera that uses quaternions to build rotations. Rotates with right mouse.
+// Moves with WASD, also uses 'q' and 'e' to pan along the world's up/down vector.
+class QuaternionCamera : ZilchComponent
+{
+  [Dependency] var Camera : Camera = null;
+  
+  // The movement speed of the camera.
+  [Property] var Speed : Real = 8.0;
+
+  // The speed at which the camera can rotation. This has the units of radians per pixel.
+  [Property] var LookSpeed : Real = 0.005;
+
+  // If this camera will run when the space is paused.
+  // Used mostly to debug a paused game.
+  [Property] var RunWhilePaused : Boolean = true;
+
+  // If we want this camera to be able to rotate.
+  [Property] var AllowRotation : Boolean = true;
+
+  // If we want this camera to be able to translate.
+  [Property] var AllowTranslation : Boolean = true;
+
+  // Whether or not the mouse is hidden and trapped by the camera.
+  [Property] var MouseTrapped : Boolean = false;
+
+  // The up/down delta from mouse move.
+  var UpDelta : Real = 0.0;
+
+  // the left/right delta from mouse move.
+  var SideDelta : Real = 0.0;
+
+  // The total accumulation of the up/down angle (see spherical coordinates for the definition fo phi).
+  // Used to prevent wrapping around at the poles.
+  var Phi : Real = 0.0;
+
+  // If the camera should rotate when the mouse moves
+  // (currently triggered by right mouse up/down)
+  var MouseReady : Boolean = false;
+
+  function Initialize(initializer : CogInitializer)
+  {
+    // Get the viewport so we can listen to mouse events
+    var viewport = this.Owner.CameraViewport;
+    
+    Zero.Connect(viewport, Events.RightMouseDown, this.OnRightMouseDown);
+    Zero.Connect(viewport, Events.RightMouseUp, this.OnRightMouseUp);
+    Zero.Connect(viewport, Events.MouseMove, this.OnMouseMove);
+    
+    // If we run while paused then connect to frame update (happens every frame),
+    // otherwise only listen on logic update (won't happen if paused)
+    if(this.RunWhilePaused)
+    {
+      Zero.Connect(this.Space, Events.FrameUpdate, this.OnFrameUpdate);
+    }
+    else
+    {
+      Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+    
+    // If we want to trap the mouse, then set the mouse to always be ready
+    // and tell the viewport to trap the mouse (hides the cursor)
+    if(this.MouseTrapped)
+    {
+      this.MouseReady = true;
+      Zero.Mouse.Trapped = true;
+    }
+  }
+
+  function OnRightMouseDown(viewportMouseEvent : MouseEvent)
+  {
+    // If the mouse is trapped then we don't modify the mouse ready state
+    if(this.MouseTrapped == false)
+    {
+      this.MouseReady = true;
+    }
+  }
+
+  function OnRightMouseUp(viewportMouseEvent : MouseEvent)
+  {
+    if(this.MouseTrapped == false)
+    {
+      this.MouseReady = false;
+    }
+  }
+
+  function OnMouseMove(viewportMouseEvent : MouseEvent)
+  {
+    // If the mouse was ready (aka we're tracking mouse movement)
+    // then update the mouse deltas
+    if(this.MouseReady)
+    {
+      this.UpDelta = -viewportMouseEvent.Movement.Y * this.LookSpeed;
+      this.SideDelta = -viewportMouseEvent.Movement.X * this.LookSpeed;
+      
+      // To prevent wrapping around at the top, compute and clamp the
+      // total phi angle (see spherical coordinates) and then compute
+      // the actual delta that would be applied to get to our clamped value.
+      var halfPi = Math.Pi * 0.5;
+      var oldPhi = this.Phi;
+      this.Phi = Math.Clamp(this.Phi + this.UpDelta, -halfPi, halfPi);
+      this.UpDelta = this.Phi - oldPhi;
+    }
+  }
+
+  function CameraMovement(updateEvent : UpdateEvent)
+  {
+    // Update translation and rotation independently
+    if(this.AllowTranslation)
+    {
+      this.MoveCamera(updateEvent);
+    }
+    if(this.AllowRotation)
+    {
+      this.RotateCamera(updateEvent);
+    }
+  }
+
+  function MoveCamera(updateEvent : UpdateEvent)
+  {
+    var movement = Real3(0.0, 0.0, 0.0);
+    
+    // Record keyboard movement to pan the camera
+    if(Zero.Keyboard.KeyIsDown(Keys.A))
+      movement.X -= 1.0;
+    if(Zero.Keyboard.KeyIsDown(Keys.D))
+      movement.X += 1.0;
+    if(Zero.Keyboard.KeyIsDown(Keys.W))
+      movement.Z -= 1.0;
+    if(Zero.Keyboard.KeyIsDown(Keys.S))
+      movement.Z += 1.0;
+    
+    // We computed the direction in local space, bring it to the camera's world space
+    var current = this.Owner.Transform.Translation;
+    movement = this.Owner.Transform.TransformNormal(movement);
+    
+    // Add panning along the y-axis because it is nice.
+    // Do this after the transform normal because we want the world up, not local up
+    if(Zero.Keyboard.KeyIsDown(Keys.Q))
+      movement.Y -= 1.0;
+    if(Zero.Keyboard.KeyIsDown(Keys.E))
+      movement.Y += 1.0; 
+    
+    // Update the translation
+    var speed = updateEvent.Dt * this.Speed;
+    current += movement * speed;
+    this.Owner.Transform.Translation = current;
+  }
+
+  function RotateCamera(updateEvent : UpdateEvent)
+  {
+    // Cache the transform component
+    var transform = this.Owner.Transform;
+    
+    // Generate the up rotation (the rotation about our local x axis)
+    var upRotation = Quaternion();
+    // Bring our local x axis into our local space (ignore parent's transform)
+    var worldX = transform.TransformNormalLocal(Real3.XAxis);
+    worldX = Math.Normalize(worldX);
+    // Generate the quaternion from that axis and an angle
+    upRotation = Math.ToQuaternion(worldX, this.UpDelta);
+    
+    // Generate the side rotation (rotation about world y axis)
+    var sideRotation = Quaternion();
+    sideRotation = Math.ToQuaternion(Real3.YAxis, this.SideDelta);
+    
+    // Make sure to multiply in the correct order, we have to look up then look to the side.
+    // If we look to the side first, we will invalidate the up rotation we generated
+    // (use local rotation incase we have a parent)
+    var endResult = Math.Multiply(upRotation, transform.LocalRotation);
+    endResult = Math.Multiply(sideRotation, endResult);
+    // Also make sure to normalize
+    endResult = Math.Normalize(endResult);
+    transform.LocalRotation = endResult;
+    
+    // Clear the deltas
+    this.UpDelta = 0.0;
+    this.SideDelta = 0.0;
+  }
+
+  function OnLogicUpdate(updateEvent : UpdateEvent)
+  {
+    this.CameraMovement(updateEvent);
+  }
+
+  function OnFrameUpdate(updateEvent : UpdateEvent)
+  {
+    this.CameraMovement(updateEvent);
+  }
+}

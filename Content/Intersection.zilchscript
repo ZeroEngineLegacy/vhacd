@@ -1,0 +1,114 @@
+class Intersection
+{
+  [Static]
+  function Test(aabb : Aabb, tri : Triangle) : Boolean
+  {
+    //
+    //var normal = tri.GetNormal();
+    //var edge01 = tri.P1 - tri.P0;
+    //var edge12 = tri.P2 - tri.P1;
+    //var edge20 = tri.P0 - tri.P2;
+    //var aabbEdges = Array[Real3]() {Real3.XAxis, Real3.YAxis, Real3.ZAxis};
+    //var triEdges = Array[Real3]() {edge01, edge12, edge20};
+    //var axes = Array[Real3]() {Real3.XAxis, Real3.YAxis, Real3.ZAxis};
+    //axes.Add(normal);
+    //foreach(var triEdge in triEdges)
+    //{
+    //  foreach(var aabbEdge in aabbEdges)
+    //  {
+    //    axes.Add(Math.Cross(triEdge, aabbEdge));
+    //  }
+    //}
+    
+    var aabbShape = AabbShape() {Aabb = aabb};
+    var triShape = TriangleShape() {Tri = tri};
+    
+    //return Sat.Test(aabbShape, triShape, axes);
+    return Sat.Test(aabbShape, triShape);
+  }
+}
+
+class Sat
+{
+  [Static]
+  function TestLegacy(shapeA : SupportShape, shapeB : SupportShape, axes : Array[Real3]) : Boolean
+  {
+    foreach(var axis in axes)
+    {
+      if(Math.Length(axis) < 0.001)
+        continue;
+        
+      var axisResult = Sat.TestAxis(shapeA, shapeB, Math.Normalize(axis));
+      
+      if(axisResult == false)
+        return false;
+    }
+    return true;
+  }
+  
+  [Static]
+  function Test(shapeA : SupportShape, shapeB : SupportShape) : Boolean
+  {
+    var normalsAResult = Sat.TestAxes(shapeA, shapeB, shapeA.GetFaceNormals());
+    if(normalsAResult == false)
+      return false;
+    
+    var normalsBResult = Sat.TestAxes(shapeA, shapeB, shapeB.GetFaceNormals());
+    if(normalsBResult == false)
+      return false;
+    
+    var edgesA = shapeA.GetEdges();
+    var edgesB = shapeB.GetEdges();
+    
+    foreach(var edgeA in edgesA)
+    {
+      foreach(var edgeB in edgesB)
+      {
+        var axis = Math.Cross(edgeA, edgeB);
+        if(Math.Length(axis) < 0.001)
+          continue;
+        
+        var axisResult = Sat.TestAxis(shapeA, shapeB, Math.Normalize(axis));
+        
+        if(axisResult == false)
+          return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  [Static]
+  function TestAxes(shapeA : SupportShape, shapeB : SupportShape, axes : Array[Real3]) : Boolean
+  {
+    foreach(var axis in axes)
+    {
+      var axisResult = Sat.TestAxis(shapeA, shapeB, Math.Normalize(axis));
+      
+      if(axisResult == false)
+        return false;
+    }
+    return true;
+  }
+  
+  [Static]
+  function TestAxis(shapeA : SupportShape, shapeB : SupportShape, axis : Real3) : Boolean
+  {
+    var projA = Sat.GetProjectionInterval(shapeA, axis);  
+    var projB = Sat.GetProjectionInterval(shapeB, axis);
+    
+    if(projA.X > projB.Y || projB.X > projA.Y)
+      return false;
+    return true;
+  }
+  
+  [Static]
+  function GetProjectionInterval(shape : SupportShape, axis : Real3) : Real2
+  {
+    var min = shape.Support(-axis);
+    var max = shape.Support(axis);
+    
+    var result = Real2(Math.Dot(min, axis), Math.Dot(max, axis));
+    return result;
+  }
+}

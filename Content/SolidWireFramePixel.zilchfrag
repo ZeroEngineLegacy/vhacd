@@ -1,0 +1,50 @@
+[Pixel]
+struct SolidWireFramePixel
+{
+  // Do we draw filled or empty wire frames
+  [PropertyInput] var Filled : Boolean = true;
+  // How many pixels thick the wire frame should be
+  [PropertyInput] var Pixels : Integer = 10;
+  
+  // Inputs from the geometry shader
+  [StageInput] var Distance : Real3;
+  //[StageInput] var EdgeDistances : Real3;
+  
+  // Inputs from the pixel shader
+  [FragmentInput][Output] var Albedo : Real3;
+  [FragmentInput][Output] var Metallic : Real;
+  [FragmentInput][Output] var Roughness : Real;
+  [FragmentInput][Output] var Specular : Real;
+  
+  function GetIndex() : Integer
+  {
+    // Find which edge we are closest to
+    if(this.Distance.X < this.Distance.Y && this.Distance.X < this.Distance.Z)
+      return 0;
+    else if(this.Distance.Y < this.Distance.X && this.Distance.Y < this.Distance.Z)
+      return 1;
+    return 2;
+  }
+  
+  function Main()
+  {
+    var index = this.GetIndex();
+    var distance = this.Distance[index];
+    
+    // If we aren't filled and we're past the max pixel distance then discard this pixel
+    if(!this.Filled && distance > this.Pixels)
+      Shader.Discard();
+    // If we aren't filled then set the distance to zero which will initialize set the color to black
+    if(!this.Filled)
+      distance = 0;
+      
+    // Compute an interpolant for the colors
+    var t = Math.SmoothStep(0, this.Pixels, distance);
+    
+    // Interpolate all of the default values on core zero materials between black and their original value
+    this.Albedo = Math.Lerp(Real3(), this.Albedo, t);
+    this.Metallic = Math.Lerp(0, this.Metallic, t);
+    this.Roughness = Math.Lerp(0, this.Roughness, t);
+    this.Specular = Math.Lerp(0, this.Specular, t);
+  }
+}
