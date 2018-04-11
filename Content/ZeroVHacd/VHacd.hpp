@@ -18,6 +18,7 @@ public:
   void Recurse(int depth);
 
   bool SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth);
+  float TestSplit(Voxelizer& voxelizer, int axis, Real axisValue);
 
   void MergeHulls();
   void BuildHullTable(Zilch::Array<QuickHull>& combinedHulls, Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes);
@@ -31,6 +32,9 @@ public:
   Integer3 mSubDivisions;
   int mRecursions;
   int mMaxHulls;
+  Real mConcavity;
+
+  Real mInitialConvexHullVolume;
 
   TriangleMesh mMesh;
 };

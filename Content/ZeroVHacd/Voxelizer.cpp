@@ -60,6 +60,21 @@ Real Voxelizer::ComputeVolume()
   return voxelVolume;
 }
 
+Real Voxelizer::GetSurfaceVolume()
+{
+  int count = 0;
+  for (size_t i = 0; i < mVoxels.Size(); ++i)
+  {
+    VoxelState::Enum state = mVoxels[i];
+    if (state == VoxelState::Surface)
+      ++count;
+  }
+
+  Real voxelVolume = mVoxelSize.x * mVoxelSize.y * mVoxelSize.z;
+  voxelVolume *= count;
+  return voxelVolume;
+}
+
 Integer3 Voxelizer::Discretize(const Real3& point)
 {
   Real3 extents = mAabb.mMax - mAabb.mMin;
@@ -158,7 +173,7 @@ void Voxelizer::Fill()
   }
 }
 
-void Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back)
+bool Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back)
 {
   Integer3 index = Discretize(Real3(axisValue));
   int splitIndex = index[axisIndex];
@@ -172,6 +187,9 @@ void Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer
   int backCount = subDivisions.x - frontCount;
   int voxelsFront = frontCount * crossArea;
   int voxelsBack = backCount * crossArea;
+
+  if (frontCount == 0 || backCount == 0)
+    return false;
 
 
   front.mSubDivisions[axisIndex] = frontCount;
@@ -236,4 +254,5 @@ void Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer
         back.SetVoxel(backCoord, VoxelState::Surface);
     }
   }
+  return true;
 }

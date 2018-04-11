@@ -24,6 +24,7 @@ private:
   Integer3 mSubDivisions;
   int mRecursions;
   int mMaxHulls;
+  Real mConcavity;
 
   VHacd mVHacd;
 

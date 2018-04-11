@@ -99,25 +99,106 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
     return false;
 
   Real hullVolume = hull.ComputeVolume();
+  // Cache the original convex hull volume as a normalization factor
+  if (depth == 0)
+  {
+    mInitialConvexHullVolume = hullVolume;
+  }
 
+
+  Real concavity = (hullVolume - voxelVolume) / mInitialConvexHullVolume;
   Real ratio = voxelVolume / hullVolume;
 
-  if (0.95f < ratio && ratio < 1.05f)
+  Real concavityError = mConcavity;
+
+  Real error = 1.01f * voxelizer.GetSurfaceVolume() / mInitialConvexHullVolume;
+
+  bool tooMuchError = concavity > concavityError && concavity > error;
+  if (!tooMuchError)
   {
     mFinalVoxelizers.PushBack(voxelizer);
     return false;
   }
 
+  
+  Array<Real> scores;
+  Array<Real2> planes;
+  Real3 center = voxelizer.mAabb.GetCenter();
+  
+  Real3 min = voxelizer.mAabb.mMin;
+  Real3 max = voxelizer.mAabb.mMax;
 
+  size_t subDivisions = 5;
+  for (size_t subDivision = 0; subDivision < subDivisions; ++subDivision)
+  {
+    Real t = ((float)subDivision + 0.5f) / subDivisions;
+    Real3 value = Math::Lerp(min, max, t);
+    planes.PushBack(Real2(0, value[0]));
+    planes.PushBack(Real2(1, value[1]));
+    planes.PushBack(Real2(2, value[2]));
+  }
+  
+
+  float bestScore = Math::PositiveMax();
+  size_t bestPlaneIndex = 0;
+  for (size_t i = 0; i < planes.Size(); ++i)
+  {
+    Real2 planeData = planes[i];
+    int planeAxis = (int)planeData.x;
+    float axisValue = planeData.y;
+    float score = TestSplit(voxelizer, planeAxis, axisValue);
+    scores.PushBack(score);
+    if (score < bestScore)
+    {
+      bestScore = score;
+      bestPlaneIndex = i;
+    }
+  }
+
+  Real2 planeData = planes[bestPlaneIndex];
+  int planeAxis = (int)planeData.x;
+  float axisValue = planeData.y;
   Voxelizer front;
   Voxelizer back;
-  int axis = (depth + 1) % 3;
-  Real splitValue = voxelizer.mAabb.GetCenter()[axis];
+  //int axis = (depth + 1) % 3;
+  //Real splitValue = voxelizer.mAabb.GetCenter()[axis];
 
-  voxelizer.Split(axis, splitValue, front, back);
+  voxelizer.Split(planeAxis, axisValue, front, back);
   newVoxelizers.PushBack(front);
   newVoxelizers.PushBack(back);
   return true;
+}
+
+float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
+{
+  Voxelizer front;
+  Voxelizer back;
+  //int axis = (depth + 1) % 3;
+  //Real splitValue = voxelizer.mAabb.GetCenter()[axis];
+
+  bool wasSplit = voxelizer.Split(axis, axisValue, front, back);
+  if (!wasSplit)
+    return Math::PositiveMax();
+
+  QuickHull frontHull, backHull;
+  frontHull.Build(front);
+  backHull.Build(back);
+
+  Real frontVoxelVolume = front.ComputeVolume();
+  Real backVoxelVolume = back.ComputeVolume();
+  Real frontHullVolume = frontHull.ComputeVolume();
+  Real backHullVolume = backHull.ComputeVolume();
+
+  Real concavityFront = (frontHullVolume - frontVoxelVolume) / mInitialConvexHullVolume;
+  Real concavityBack = (backHullVolume - backVoxelVolume) / mInitialConvexHullVolume;
+  Real concavity = (concavityFront + concavityBack);
+  Real balance = Math::Abs(frontVoxelVolume - backVoxelVolume) / mInitialConvexHullVolume;
+
+  float alpha = 0.05f;
+  //alpha = 0;
+  Real score = concavity + alpha * balance;
+
+  return score;
 }
 
 void VHacd::MergeHulls()

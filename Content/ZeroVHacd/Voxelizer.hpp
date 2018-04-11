@@ -16,6 +16,7 @@ public:
   void WriteTriangle(const Triangle& tri);
 
   Real ComputeVolume();
+  Real GetSurfaceVolume();
 
   Integer3 Discretize(const Real3& point);
   size_t VoxelCoordToIndex(const Integer3& voxelCoord);
@@ -29,7 +30,7 @@ public:
   void AddFillLocation(Zero::Array<Integer3>& queue, const Integer3& voxelCoord);
   void Fill();
 
-  void Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back);
+  bool Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back);
 
   Integer3 mSubDivisions;
   Real3 mVoxelSize;
