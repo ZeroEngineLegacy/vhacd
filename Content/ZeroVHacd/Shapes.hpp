@@ -100,4 +100,7 @@ public:
   Real3 mStart;
   Real3 mDirection;
 };
-
+
+Matrix3 ComputeCovarianceMatrix(const Array<Vector3>& points);
+Matrix3 ComputeJacobiRotation(const Matrix3& matrix);
+void ComputeEigenValuesAndVectors(const Matrix3& covariance, Vector3& eigenValues, Matrix3& eigenVectors, int maxIterations, float diagonalSqEpsilon);

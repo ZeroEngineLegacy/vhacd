@@ -31,9 +31,16 @@ public:
   void Fill();
 
   bool Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back);
+  void ComputeEigenValuesAndVectors(Real3& eigenValues, Matrix3& eigenVectors);
+  void ComputeSymmetryComponents();
 
   Integer3 mSubDivisions;
   Real3 mVoxelSize;
   Aabb mAabb;
   Zero::Array<VoxelState::Enum> mVoxels;
+
+  Real3 mEigenValues;
+  Matrix3 mEigenVectors;
+  Real3 mRevolutionAxis;
+  Real mRevolutionWeight;
 };

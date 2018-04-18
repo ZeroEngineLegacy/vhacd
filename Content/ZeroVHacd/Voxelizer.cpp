@@ -256,3 +256,57 @@ bool Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer
   }
   return true;
 }
+
+void Voxelizer::ComputeEigenValuesAndVectors(Real3& eigenValues, Matrix3& eigenVectors)
+{
+  Array<Real3> points;
+  for (int z = 0; z < mSubDivisions.z; ++z)
+  {
+    for (int y = 0; y < mSubDivisions.y; ++y)
+    {
+      for (int x = 0; x < mSubDivisions.x; ++x)
+      {
+        Integer3 voxelCoord = Integer3(x, y, z);
+        Aabb voxelAabb = GetVoxelAabb(voxelCoord);
+        points.PushBack(voxelAabb.GetCenter());
+      }
+    }
+  }
+
+  Matrix3 covarianceMatrix = ::ComputeCovarianceMatrix(points);
+  ::ComputeEigenValuesAndVectors(covarianceMatrix, eigenValues, eigenVectors, 100, 0.0001f);
+}
+
+void Voxelizer::ComputeSymmetryComponents()
+{
+  ComputeEigenValuesAndVectors(mEigenValues, mEigenVectors);
+
+  Real xy = Math::Abs(mEigenValues.x - mEigenValues.y);
+  Real xz = Math::Abs(mEigenValues.x - mEigenValues.z);
+  Real yz = Math::Abs(mEigenValues.y - mEigenValues.z);
+  
+  Real numer;
+  Real denom;
+  size_t primaryAxis = 0;
+
+  if (yz < xy && yz < xz)
+  {
+    primaryAxis = 0;
+  }
+  else if (xz < xy && xz < yz)
+  {
+    primaryAxis = 1;
+  }
+  else
+  {
+    primaryAxis = 2;
+  }
+
+  mRevolutionAxis = Real3(0, 0, 0);
+  mRevolutionAxis[primaryAxis] = 1;
+  size_t axis1 = (primaryAxis + 1) % 3;
+  size_t axis2 = (primaryAxis + 2) % 3;
+  numer = Math::Sq(mEigenValues[axis1] - mEigenValues[axis2]);
+  denom = Math::Sq(Math::Abs(mEigenValues[axis1]) + Math::Abs(mEigenValues[axis2]));
+  mRevolutionWeight = 1 - numer / denom;
+}

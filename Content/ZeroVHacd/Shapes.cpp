@@ -178,3 +178,134 @@ void TriangleShape::GetEdges(Zero::Array<Real3>& edges)
   edges.PushBack(edge12);
   edges.PushBack(edge20);
 }
+
+Matrix3 ComputeCovarianceMatrix(const Array<Vector3>& points)
+{
+  size_t pointCount = points.Size();
+  float invPointCount = 1.0f / pointCount;
+
+  // Compute the centroid of the points
+  Vector3 centroid = Vector3::cZero;
+  for (size_t i = 0; i < pointCount; ++i)
+    centroid += points[i];
+  centroid *= invPointCount;
+
+  // Compute covariance elements
+  float e00, e11, e22, e01, e02, e12;
+  e00 = e11 = e22 = e01 = e02 = e12 = 0.0f;
+  for (size_t i = 0; i < pointCount; ++i)
+  {
+    // Translate points so center of mass is at origin
+    Vector3 p = points[i] - centroid;
+    // Compute covariance of translated points
+    e00 += p.x * p.x;
+    e11 += p.y * p.y;
+    e22 += p.z * p.z;
+    e01 += p.x * p.y;
+    e02 += p.x * p.z;
+    e12 += p.y * p.z;
+  }
+
+  // Fill in the covariance matrix elements
+  Matrix3 covarianceMat;
+  covarianceMat[0][0] = e00 * invPointCount;
+  covarianceMat[1][1] = e11 * invPointCount;
+  covarianceMat[2][2] = e22 * invPointCount;
+  covarianceMat[0][1] = covarianceMat[1][0] = e01 * invPointCount;
+  covarianceMat[0][2] = covarianceMat[2][0] = e02 * invPointCount;
+  covarianceMat[1][2] = covarianceMat[2][1] = e12 * invPointCount;
+  return covarianceMat;
+}
+
+Matrix3 ComputeJacobiRotation(const Matrix3& matrix)
+{
+  int p = 0;
+  int q = 1;
+  for (size_t i = 0; i < 3; ++i)
+  {
+    for (size_t j = 0; j < 3; ++j)
+    {
+      if (i == j)
+        continue;
+      if (Math::Abs(matrix[i][j]) > Math::Abs(matrix[p][q]))
+      {
+        p = i;
+        q = j;
+      }
+    }
+  }
+
+  // Compute cosine and sine that will rotate the given matrix's [p][q] item to 0
+  float c, s;
+  if (Math::Abs(matrix[p][q]) > 0.0001f)
+  {
+    float r = (matrix[q][q] - matrix[p][p]) / (2.0f * matrix[p][q]);
+    float tangent;
+    if (r >= 0.0f)
+      tangent = 1.0f / (r + Math::Sqrt(1.0f + r * r));
+    else
+      tangent = -1.0f / (-r + Math::Sqrt(1.0f + r * r));
+    c = 1.0f / Math::Sqrt(1.0f + tangent * tangent);
+    s = tangent * c;
+  }
+  else
+  {
+    c = 1.0f;
+    s = 0.0f;
+  }
+
+  // Construct the jacobi rotation matrix with the compute cosine and sine values (in the right spots of course)
+  Matrix3 rotation = Matrix3::cIdentity;
+  rotation[p][p] = c;
+  rotation[p][q] = s;
+  rotation[q][p] = -s;
+  rotation[q][q] = c;
+  return rotation;
+}
+
+void ComputeEigenValuesAndVectors(const Matrix3& covariance, Vector3& eigenValues, Matrix3& eigenVectors, int maxIterations, float diagonalSqEpsilon)
+{
+  float prevoff = 0.0f;
+  Matrix3 matrix = covariance;
+
+  // Intializes the eigenvector matrix to identity
+  eigenVectors.SetIdentity();
+
+  // Repeat for some max number of iterations
+  for (int n = 0; n < maxIterations; ++n)
+  {
+    Matrix3 jacobiRotation = ComputeJacobiRotation(matrix);
+
+    // Cumulate rotations into what will contain the eigenvectors
+    eigenVectors = eigenVectors * jacobiRotation;
+
+    // Make 'a' more diagonal, until just eigenvalues remain on diagonal
+    matrix = (jacobiRotation.Transposed() * matrix) * jacobiRotation;
+
+    // Compute "norm" of off-diagonal elements
+    float off = 0.0f;
+    for (size_t i = 0; i < 3; ++i)
+    {
+      for (size_t j = 0; j < 3; ++j)
+      {
+        if (i == j)
+          continue;
+        off += matrix[i][j] * matrix[i][j];
+      }
+    }
+    /* off = sqrt(off); not needed for norm comparison */
+    if (off < diagonalSqEpsilon)
+      break;
+
+    // More propery method but harder to explain so leaving this as a reference
+    // Stop when norm no longer decreasing
+    //if(n > 2 && off >= prevoff)
+    //  break;
+
+    prevoff = off;
+  }
+
+  eigenValues[0] = matrix[0][0];
+  eigenValues[1] = matrix[1][1];
+  eigenValues[2] = matrix[2][2];
+}
