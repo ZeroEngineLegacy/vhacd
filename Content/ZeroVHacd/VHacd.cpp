@@ -2,6 +2,13 @@
 
 #include "VHacd.hpp"
 
+VHacd::VHacd()
+{
+  mResample = true;
+  mAllowedConcavityVolumeError = 0.001f;
+  mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
+}
+
 void VHacd::Compute(const Integer3& subDivisions, int recursions, Mesh* mesh)
 {
   mSubDivisions = subDivisions;
@@ -10,6 +17,7 @@ void VHacd::Compute(const Integer3& subDivisions, int recursions, Mesh* mesh)
   Initialize(mesh);
   ComputeApproximateConvexDecomposition();
   MergeHulls();
+  Resample();
 }
 
 void VHacd::Clear()
@@ -69,17 +77,18 @@ void VHacd::ComputeApproximateConvexDecomposition()
 
 void VHacd::Recurse(int depth)
 {
+  // Cap out at some max recursion depth
   if (depth >= mRecursions)
     return;
 
-  // We'll at max have 2 times as many voxelizers 
+  // We'll have at max have 2 times as many voxelizers 
   Zero::Array<Voxelizer> newVoxelizers;
   newVoxelizers.Reserve(mVoxelizers.Size() * 2);
 
   for (size_t i = 0; i < mVoxelizers.Size(); ++i)
   {
+    // Try to split each voxel grid into two
     Voxelizer& voxelizer = mVoxelizers[i];
-
     SplitVoxelizer(voxelizer, newVoxelizers, depth);
   }
 
@@ -93,7 +102,7 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   Real voxelVolume = voxelizer.ComputeVolume();
   QuickHull hull;
 
-  // Failed to build a hull (the voxel has no volume? Shouldn't happen)
+  // Failed to build a hull (the voxel has no volume? Shouldn't happen...)
   bool success = hull.Build(voxelizer);
   if (!success)
     return false;
@@ -105,49 +114,83 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
     mInitialConvexHullVolume = hullVolume;
   }
 
+  // Measure how much error there is between the volume of the voxel grid and the volume of the convex hull of the voxel grid.
+  // Normalize this by the original hull's volume so we know when we reach really small discrepancies with respect to the original mesh size.
+  Real measuredConcavityVolumeError = (hullVolume - voxelVolume) / mInitialConvexHullVolume;
+  bool tooMuchError = measuredConcavityVolumeError > mAllowedConcavityVolumeError;
 
-  Real concavity = (hullVolume - voxelVolume) / mInitialConvexHullVolume;
-  Real ratio = voxelVolume / hullVolume;
+  // Initially in a larger mesh, the volume error should be larger than the surface area by a fair amount (aka volume error / surface area >> 1).
+  // As we improve results we'll reach a point where the volume error is really close to the surface area of the mesh.
+  // This means we can't actually refine that much more, typically because the mesh has gotten too small.
+  Real surfaceAreaRatio = voxelizer.GetSurfaceVolume() / mInitialConvexHullVolume;
+  Real measuredVolumeToSurfaceAreaRatio = measuredConcavityVolumeError / surfaceAreaRatio;
+  bool tooSmall = measuredVolumeToSurfaceAreaRatio < mAllowedVolumeSurfaceAreaRatio;
 
-  Real concavityError = mConcavity;
-
-  Real error = 1.01f * voxelizer.GetSurfaceVolume() / mInitialConvexHullVolume;
-
-  bool tooMuchError = concavity > concavityError && concavity > error;
-  if (!tooMuchError)
+  // This sub-mesh is convex enough (no further refinement necessary) if it doesn't
+  // have too much error or it becomes too small to work with.
+  bool isConvexEnough = !tooMuchError || tooSmall;
+  if (isConvexEnough)
   {
     mFinalVoxelizers.PushBack(voxelizer);
     return false;
   }
 
+  // Compute the principle axes so we can measure the "axis of revolution".
+  // See FindBestSplitPlane for an explanation of this term.
+  voxelizer.ComputeSymmetryComponents();
+
+  // Compute all of the possible split planes for the given voxel set based upon some input parameters
+  Array<SplitPlane> planes;
+  ComputePossibleSplitPlanes(voxelizer, planes);
+
+  // Find what the best split plane
+  SplitPlane bestSplitPlane = FindBestSplitPlane(voxelizer, planes);
+
+  // @ToDo
+  bool refinement = false;
+  if (refinement)
+  {
+    // Test an area around the best plane for a better split point
+  }
+
   
-  Array<Real> scores;
-  Array<Real2> planes;
-  Real3 center = voxelizer.mAabb.GetCenter();
-  
+  // @ JoshD: Optimize these copies
+  Voxelizer front;
+  Voxelizer back;
+  voxelizer.Split(bestSplitPlane.mAxis, bestSplitPlane.mAxisValue, front, back);
+  newVoxelizers.PushBack(front);
+  newVoxelizers.PushBack(back);
+  return true;
+}
+
+void VHacd::ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& planes)
+{
   Real3 min = voxelizer.mAabb.mMin;
   Real3 max = voxelizer.mAabb.mMax;
 
-  size_t subDivisions = 5;
+  // Temporarily just make 'n' subdivisions on each axis to test
+  size_t subDivisions = 21;
   for (size_t subDivision = 0; subDivision < subDivisions; ++subDivision)
   {
     Real t = ((float)subDivision + 0.5f) / subDivisions;
     Real3 value = Math::Lerp(min, max, t);
-    planes.PushBack(Real2(0, value[0]));
-    planes.PushBack(Real2(1, value[1]));
-    planes.PushBack(Real2(2, value[2]));
+    planes.PushBack(SplitPlane(0, value[0]));
+    planes.PushBack(SplitPlane(1, value[1]));
+    planes.PushBack(SplitPlane(2, value[2]));
   }
-  
+}
 
-  float bestScore = Math::PositiveMax();
+VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes)
+{
   size_t bestPlaneIndex = 0;
+  float bestScore = Math::PositiveMax();
+  // Test each plane, keeping the one with the lowest score
   for (size_t i = 0; i < planes.Size(); ++i)
   {
-    Real2 planeData = planes[i];
-    int planeAxis = (int)planeData.x;
-    float axisValue = planeData.y;
+    SplitPlane& planeData = planes[i];
+    int planeAxis = planeData.mAxis;
+    float axisValue = planeData.mAxisValue;
     float score = TestSplit(voxelizer, planeAxis, axisValue);
-    scores.PushBack(score);
     if (score < bestScore)
     {
       bestScore = score;
@@ -155,48 +198,57 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
     }
   }
 
-  Real2 planeData = planes[bestPlaneIndex];
-  int planeAxis = (int)planeData.x;
-  float axisValue = planeData.y;
-  Voxelizer front;
-  Voxelizer back;
-  //int axis = (depth + 1) % 3;
-  //Real splitValue = voxelizer.mAabb.GetCenter()[axis];
-
-  voxelizer.Split(planeAxis, axisValue, front, back);
-  newVoxelizers.PushBack(front);
-  newVoxelizers.PushBack(back);
-  return true;
+  return planes[bestPlaneIndex];
 }
 
 float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
 {
   Voxelizer front;
   Voxelizer back;
-  //int axis = (depth + 1) % 3;
-  //Real splitValue = voxelizer.mAabb.GetCenter()[axis];
-
+  // Split along the given split plane into two pieces. If we failed then this probably was
+  // too small of a grid such that one side became completely empty.
   bool wasSplit = voxelizer.Split(axis, axisValue, front, back);
   if (!wasSplit)
     return Math::PositiveMax();
 
+  // Build the convex hull of both split sides
   QuickHull frontHull, backHull;
   frontHull.Build(front);
   backHull.Build(back);
 
+  // Compute the voxel volume and convex hull volume of both sides.
   Real frontVoxelVolume = front.ComputeVolume();
   Real backVoxelVolume = back.ComputeVolume();
   Real frontHullVolume = frontHull.ComputeVolume();
   Real backHullVolume = backHull.ComputeVolume();
 
-  Real concavityFront = (frontHullVolume - frontVoxelVolume) / mInitialConvexHullVolume;
-  Real concavityBack = (backHullVolume - backVoxelVolume) / mInitialConvexHullVolume;
-  Real concavity = (concavityFront + concavityBack);
+  // The heuristic for HACD is split up into 3 pieces:
+  // (all of these are normalized by the initial convex hull's volume
+
+  // 1. Connectivity: the sum of the concavity errors of both sides. Concavity error is measured as the
+  // difference in volume between the convex hull and the voxel grid.
+  Real concavityFront = frontHullVolume - frontVoxelVolume;
+  Real concavityBack = backHullVolume - backVoxelVolume;
+  Real concavityError = (concavityFront + concavityBack) / mInitialConvexHullVolume;
+
+  // 2. Balance: How evenly the plane splits the voxel grid. This is measured by how close the two sides are in volume.
   Real balance = Math::Abs(frontVoxelVolume - backVoxelVolume) / mInitialConvexHullVolume;
 
-  float alpha = 0.05f;
-  //alpha = 0;
-  Real score = concavity + alpha * balance;
+  // 3. Symmetry: This is the most confusing of the 3 measurements, but this is defined to penalize clipping planes that are close to
+  // orthogonal to a "potential revolution axis". A revolution axis is found by computing the 3 principle axes and finding the two that
+  // are most similar to each other in length. The other axis is the revolution axis. This is similar to finding the axis of most spread 
+  // but a bit different. By finding which axis is the "least similar" this seems to try and favor a wider spread base. 
+  // @JoshD: Toy around with actually using the axis of most spread?
+  Real w = voxelizer.mRevolutionWeight;
+
+  // symmetry = w * Dot(plane.Normal, revolutionAxis).
+  // Since plane.Normal is axis aligned then this simplifies to:
+  Real symmetry = w * voxelizer.mRevolutionAxis[axis];
+
+  // These 3 scores are then combined with a few weight values (penalize most heavily based upon concavity)
+  float balanceWeight = 0.05f;
+  float symmetryWeight = 0.05f;
+  Real score = concavityError + balanceWeight * balance + symmetryWeight * symmetry;
 
   return score;
 }
@@ -207,12 +259,11 @@ void VHacd::MergeHulls()
   volumes.Resize(mHulls.Size());
 
   Zilch::Array<float> combinedVolumes;
-  Zilch::Array<QuickHull> combinedHulls;
   
   while (mHulls.Size() > (size_t)mMaxHulls)
   {
     // Rebuild the entire table (slow, only some rows change each time)
-    BuildHullTable(combinedHulls, volumes, combinedVolumes);
+    BuildHullTable(volumes, combinedVolumes);
 
     // Find two hulls to merge (this is n-squared but hardly the slow part of the algorithm)
     size_t iX, iY;
@@ -220,13 +271,17 @@ void VHacd::MergeHulls()
 
     // Replace one of the hulls with the combined one and then remove the other hull
     int index = iX + iY * mHulls.Size();
-    QuickHull& combinedHull = combinedHulls[index];
+
+    // Rebuild the hull (too much memory to keep all around)
+    QuickHull combinedHull;
+    combinedHull.Build(mHulls[iX], mHulls[iY]);
+
     mHulls[iX] = combinedHull;
     mHulls.EraseAt(iY);
   }
 }
 
-void VHacd::BuildHullTable(Zilch::Array<QuickHull>& combinedHulls, Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes)
+void VHacd::BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes)
 {
   volumes.Resize(mHulls.Size());
 
@@ -237,7 +292,6 @@ void VHacd::BuildHullTable(Zilch::Array<QuickHull>& combinedHulls, Zilch::Array<
   }
 
   combinedVolumes.Resize(mHulls.Size() * mHulls.Size());
-  combinedHulls.Resize(mHulls.Size() * mHulls.Size());
   // Compute upper-diagonal matrix of the combined hulls for every pairing
   for (size_t y = 0; y < mHulls.Size(); ++y)
   {
@@ -249,8 +303,11 @@ void VHacd::BuildHullTable(Zilch::Array<QuickHull>& combinedHulls, Zilch::Array<
       if (y > x || y == x)
         continue;
 
-      combinedHulls[index].Build(mHulls[x], mHulls[y]);
-      combinedVolumes[index] = combinedHulls[index].ComputeVolume();
+      QuickHull combinedHull;
+      combinedHull.Build(mHulls[x], mHulls[y]);
+      combinedVolumes[index] = combinedHull.ComputeVolume();
+      combinedHull.mQuickHull->Clear();
+      combinedHull.mQuickHull = nullptr;
     }
   }
 }
@@ -280,4 +337,46 @@ void VHacd::FindHullsToMerge(Zilch::Array<Real>& volumes, Zilch::Array<Real>& co
       }
     }
   }
+}
+
+void VHacd::Resample()
+{
+  if (!mResample)
+    return;
+
+  for (size_t i = 0; i < mHulls.Size(); ++i)
+    Resample(mHulls[i]);
+}
+
+void VHacd::Resample(QuickHull& hull)
+{
+  Array<Real3> points;
+  points = hull.mVertices;
+  Aabb aabb;
+  for (size_t i = 0; i < points.Size(); ++i)
+  {
+    aabb.Expand(points[i]);
+  }
+  Real3 center = aabb.GetCenter();
+  Real diagonal = Math::Length(aabb.mMax - aabb.mMin);
+
+  for (size_t i = 0; i < points.Size(); ++i)
+  {
+    Ray ray;
+    ray.mStart = center;
+    ray.mDirection = Math::Normalized(points[i] - center);
+    float distance = Math::Length(points[i] - center);
+
+    float t;
+    if (mMesh.CastRay(ray, t, points[i]))
+    {
+      Real3 newPoint = ray.mStart + ray.mDirection * t;
+      Real newDistance = Math::Distance(newPoint, points[i]);
+      //float delta = Math::Abs(distance - t);
+      if (newDistance / diagonal < 0.05f)
+        points[i] = newPoint;
+    }
+  }
+
+  hull.Build(points);
 }

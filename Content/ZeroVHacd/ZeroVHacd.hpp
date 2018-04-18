@@ -24,7 +24,9 @@ private:
   Integer3 mSubDivisions;
   int mRecursions;
   int mMaxHulls;
-  Real mConcavity;
+  Real mAllowedConcavityVolumeError;
+  bool mResample;
+  Real mAllowedVolumeSurfaceAreaRatio;
 
   VHacd mVHacd;
 

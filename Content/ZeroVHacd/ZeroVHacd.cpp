@@ -13,7 +13,9 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindFieldProperty(mSubDivisions);
   ZilchBindFieldProperty(mRecursions);
   ZilchBindFieldProperty(mMaxHulls);
-  ZilchBindFieldProperty(mConcavity);
+  ZilchBindFieldProperty(mAllowedConcavityVolumeError);
+  ZilchBindFieldProperty(mResample);
+  ZilchBindFieldProperty(mAllowedVolumeSurfaceAreaRatio);
 }
 
 ZeroVHacd::ZeroVHacd()
@@ -21,7 +23,9 @@ ZeroVHacd::ZeroVHacd()
   mSubDivisions = Integer3(50, 50, 50);
   mRecursions = 3;
   mMaxHulls = 15;
-  mConcavity = 0.001f;
+  mResample = true;
+  mAllowedConcavityVolumeError = 0.001f;
+  mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
 }
 
 ZeroVHacd::~ZeroVHacd()
@@ -35,7 +39,9 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   Mesh* mesh = meshHandle;
 
   mVHacd.mMaxHulls = mMaxHulls;
-  mVHacd.mConcavity = mConcavity;
+  mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
+  mVHacd.mResample = mResample;
+  mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
   mVHacd.Compute(mSubDivisions, mRecursions, mesh);
 
   mHulls.Clear();
