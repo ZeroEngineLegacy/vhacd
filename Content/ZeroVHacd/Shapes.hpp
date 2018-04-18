@@ -85,3 +85,19 @@ public:
 
   Triangle mTri;
 };
+
+//-----------------------------------------------------------------------------Ray
+class Ray
+{
+public:
+  Ray() {}
+  Ray(const Real3& start, const Real3& dir)
+  {
+    mStart = start;
+    mDirection = dir;
+  }
+
+  Real3 mStart;
+  Real3 mDirection;
+};
+

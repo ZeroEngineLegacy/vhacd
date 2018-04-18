@@ -48,3 +48,46 @@ Triangle TriangleMesh::GetTriangle(size_t index)
   tri.mP2 = mVertices[mIndices[i + 2]];
   return tri;
 }
+
+bool TriangleMesh::CastRay(const Ray& ray, Real& t)
+{
+  t = Math::PositiveMax();
+  bool hit = false;
+
+  for (size_t i = 0; i < GetCount(); ++i)
+  {
+    Triangle tri = GetTriangle(i);
+    Real triT;
+    if (Intersection::RayTriangle(ray, tri, triT))
+    {
+      hit = true;
+      t = Math::Min(triT, t);
+    }
+  }
+  return hit;
+}
+
+bool TriangleMesh::CastRay(const Ray& ray, Real& t, Real3& targetPoint)
+{
+  Real minDistance = Math::PositiveMax();
+  t = Math::PositiveMax();
+  bool hit = false;
+
+  for (size_t i = 0; i < GetCount(); ++i)
+  {
+    Triangle tri = GetTriangle(i);
+    Real triT;
+    if (Intersection::RayTriangle(ray, tri, triT))
+    {
+      Real3 point = ray.mStart + ray.mDirection * triT;
+      Real distance = Math::Distance(point, targetPoint);
+      if (distance < minDistance)
+      {
+        minDistance = distance;
+        t = triT;
+        hit = true;
+      }
+    }
+  }
+  return hit;
+}

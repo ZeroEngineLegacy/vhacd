@@ -12,6 +12,9 @@ using Zilch::Real;
 using Zilch::Real2;
 using Zilch::Real3;
 using Zilch::Real4;
+using Math::Vector2;
+using Math::Vector3;
+using Math::Matrix3;
 using Zero::Array;
 
 using ZeroEngine::Mesh;
