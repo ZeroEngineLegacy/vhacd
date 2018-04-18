@@ -1,0 +1,34 @@
+[Version:1]
+GeometryContent 
+{
+	GeometryImport 
+	{
+		var OriginOffset = Real3{-5, -5, 0}
+		var ScaleFactor = 1
+		var ChangeBasis = true
+		var XBasisTo = BasisType.NegativeX
+		var YBasisTo = BasisType.NegativeY
+		var ZBasisTo = BasisType.PositiveZ
+	}
+	MeshBuilder 
+	{
+		var GenerateSmoothNormals = false
+		var SmoothingAngleDegreesThreshold = 30
+		var GenerateTangentSpace = true
+		var InvertUvYAxis = false
+		var FlipWindingOrder = false
+		var FlipNormals = false
+		var Meshes = Array
+		{
+			Object
+			{
+				var Name = "GenericTeddy"
+				var ResourceId = 0x5af1c9bf6aaecc19
+			}
+		}
+	}
+	GeneratedArchetype 
+	{
+		var ResourceId = 0x5af1c9be6ac83f7e
+	}
+}

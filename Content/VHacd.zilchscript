@@ -42,6 +42,8 @@ class VHacd : ZilchComponent
   
   var MeshData : MeshData = MeshData();
   
+  var OriginalModel : Cog = null;
+  
   function Initialize(init : CogInitializer)
   {
     Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
@@ -54,6 +56,15 @@ class VHacd : ZilchComponent
     {
       timeout(1000)
         this.Compute();
+    }
+    if(event.Key == Keys.One)
+    {
+      this.Model.Visible = !this.Model.Visible;
+    }
+    if(event.Key == Keys.Two)
+    {
+      if(this.OriginalModel != null)
+        this.OriginalModel.Model.Visible = !this.OriginalModel.Model.Visible;
     }
     if(event.Key == Keys.Add || event.Key == Keys.Equal)
       ++this.DebugIndex;
@@ -71,6 +82,13 @@ class VHacd : ZilchComponent
   
   function Compute()
   {
+    var child = this.Space.CreateAtPosition(Archetype.Model, this.Owner.Transform.WorldTranslation);
+    child.AttachTo(this.Owner);
+    
+    child.Model.Mesh = this.Model.Mesh;
+    child.Model.Visible = false;
+    this.OriginalModel = child;
+    
     this.MeshData.Compute(this.Model.Mesh);
     
     var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
@@ -94,7 +112,13 @@ class VHacd : ZilchComponent
       scope//if(i == 1)
       {
         var hull = zeroVhacd.GetHull(i);
-        this.Owner.QuickHullRenderer.Add(hull);
+        child = this.Space.Create(Archetype.QuickHullRenderer);
+        child.AttachTo(this.Owner);
+        child.Transform.Translation = Real3();
+        
+        child.QuickHullRenderer.Clear();
+        child.QuickHullRenderer.Add(hull);
+        //this.Owner.QuickHullRenderer.Add(hull);
       }
     }
     //foreach(var v in this.Voxelizers)

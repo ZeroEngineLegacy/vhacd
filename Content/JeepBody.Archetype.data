@@ -1,0 +1,36 @@
+[Version:1]
+Cog 
+{
+	var Name = "JeepBody"
+	Transform 
+	{
+		var Translation = Real3{0, 0, 0}
+		var Scale = Real3{1, 1, 1}
+		var Rotation = Quaternion{0, 0, 0, 1}
+	}
+	Hierarchy 
+	{
+		Cog [Id:0x5af13093c5bfbd66]
+		{
+			var Name = "buggy"
+			Transform 
+			{
+				var Translation = Real3{0, 0, 8.44684219}
+				var Scale = Real3{2.01369905, 2.01369905, 2.01369905}
+				var Rotation = Quaternion{0.69772768, 0, 0, 0.716363132}
+			}
+			Model 
+			{
+				var Visible = true
+				var ViewCulling = true
+				var VisibilityEvents = true
+				var OverrideBoundingBox = false
+				var LocalAabbCenter = Real3{0, 0, 0}
+				var LocalAabbHalfExtents = Real3{1, 1, 1}
+				var GroupSortValue = 0
+				var Material = "583afb5e7bf75e18:ZeroMaterial"
+				var Mesh = "5af13092c5c7e1bd:JeepBody"
+			}
+		}
+	}
+}

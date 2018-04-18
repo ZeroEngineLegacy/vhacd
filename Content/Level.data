@@ -175,9 +175,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{10.9333363, 7.59518147, 5.77762079}
+			var Translation = Real3{-0.980728328, 3.67857075, 13.6128273}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{-0.198651537, 0.444801003, 0.101872943, 0.867358983}
+			var Rotation = Quaternion{-0.0365933739, -0.0523030795, -0.00191786245, 0.99795872}
 		}
 		CameraViewport 
 		{
@@ -234,10 +234,10 @@ Level
 		{
 			var ControlMode = ControlMode.Orbit
 			var Previous3DMode = ControlMode.Orbit
-			var LookDistance = 11.6437645
-			var VerticalAngle = 0.450294554
-			var HorizontalAngle = 5.33547974
-			var LookTarget = Real3{2.4202323, 2.52745748, -0.339771003}
+			var LookDistance = 15.7174377
+			var VerticalAngle = 0.0733036026
+			var HorizontalAngle = -6.17846107
+			var LookTarget = Real3{0.657849014, 2.52745748, -1.97652411}
 			var MoveSensitivity = 1
 		}
 	}
@@ -386,14 +386,6 @@ Level
 			var Offset = Real3{0, 0, 0}
 			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
 		}
-		HacdScript 
-		{
-			var Active = true
-			var AutoDebugDraw = false
-			var DrawTriangles = false
-			var DrawEdges = false
-			var DrawWireFrame = true
-		}
 		VHacd 
 		{
 			var SubDivisions = Integer3{10, 10, 10}
@@ -408,10 +400,11 @@ Level
 		}
 		ZeroVHacd 
 		{
-			var SubDivisions = Integer3{50, 50, 50}
+			var SubDivisions = Integer3{50, 80, 20}
 			var Recursions = 6
-			var MaxHulls = 500
+			var MaxHulls = 100
 			var Concavity = 0.00100000005
+			var Resample = false
 		}
 		RigidBody 
 		{
@@ -428,7 +421,7 @@ Level
 			var Concavity = 0.00100000005
 			var Alpha = 0.0500000007
 			var Beta = 0.0500000007
-			var Resolution = 100000
+			var Resolution = 50000
 			var Mode = 0
 			var ConvexHullApproximation = true
 			var ConvexHullDownSamping = 4
@@ -436,7 +429,83 @@ Level
 			var MinVolumePerCH = 9.99999975e-05
 			var MaxVerticesPerCH = 64
 			var MaxConvexHulls = 1024
-			var ProjectHullVertices = true
+			var ProjectHullVertices = false
+		}
+	}
+	Cog [ContextId:8]
+	{
+		var Name = "Hacd"
+		Transform 
+		{
+			var Translation = Real3{3.85280585, 0, 0}
+			var Scale = Real3{1, 1, 1}
+			var Rotation = Quaternion{0, 0, 0, 1}
+		}
+		Model 
+		{
+			var Visible = true
+			var ViewCulling = true
+			var VisibilityEvents = true
+			var OverrideBoundingBox = false
+			var LocalAabbCenter = Real3{0, 0, 0}
+			var LocalAabbHalfExtents = Real3{1, 1, 1}
+			var GroupSortValue = 0
+			var Material = "5a9acdd308c66f53:SolidWireFrame"
+			var Mesh = "5a8f28ea0d46ffdd:Axe01"
+		}
+		MultiConvexMeshCollider 
+		{
+			var Ghost = false
+			var SendsEvents = true
+			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
+			var CollisionGroup = "4e740859314e5515:DefaultGroup"
+			var Offset = Real3{0, 0, 0}
+			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
+		}
+		HacdScript 
+		{
+			var Active = true
+			var AutoDebugDraw = false
+			var DrawTriangles = false
+			var DrawEdges = false
+			var DrawWireFrame = true
+		}
+		QuickHullRenderer 
+		{
+			var Active = true
+		}
+		ZeroVHacd 
+		{
+			var SubDivisions = Integer3{50, 50, 50}
+			var Recursions = 6
+			var MaxHulls = 100
+			var Concavity = 0.00100000005
+			var Resample = true
+		}
+		RigidBody 
+		{
+			var Velocity = Real3{0, 0, 0}
+			var AngularVelocity = Real3{0, 0, 0}
+			var DynamicState = RigidBodyDynamicState.Static
+			var AllowSleep = true
+			var Asleep = false
+			var RotationLocked = false
+			var Mode2D = Mode2DStates.InheritFromSpace
+		}
+		HacdPlugin 
+		{
+			var Concavity = 0.00100000005
+			var Alpha = 0.0500000007
+			var Beta = 0.0500000007
+			var Resolution = 50000
+			var Mode = 0
+			var ConvexHullApproximation = true
+			var ConvexHullDownSamping = 4
+			var PlaneDownSampling = 4
+			var MinVolumePerCH = 9.99999975e-05
+			var MaxVerticesPerCH = 64
+			var MaxConvexHulls = 1024
+			var ProjectHullVertices = false
 		}
 	}
 }

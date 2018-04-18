@@ -7,6 +7,7 @@ class HacdScript : ZilchComponent
   [Property] var DrawEdges : Boolean = true;
   [Property] var DrawWireFrame : Boolean = true;
   
+  var OriginalModel : Cog = null;
   var OriginalMesh : Mesh;
   var GraphicsMesh : Mesh;
   var PhysicsMesh : MultiConvexMesh = MultiConvexMesh.CreateRuntime();
@@ -25,7 +26,13 @@ class HacdScript : ZilchComponent
   {
     if(event.Key == Keys.Enter)
     {
+      var child = this.Space.CreateAtPosition(Archetype.Model, this.Owner.Transform.WorldTranslation);
+      child.AttachTo(this.Owner);
       
+      child.Model.Mesh = this.Model.Mesh;
+      child.Model.Visible = false;
+      this.OriginalModel = child;
+    
       var toSend = HacdPluginEvent();
       toSend.Mesh = this.OriginalMesh;
       toSend.PhysicsMesh = this.PhysicsMesh;
@@ -40,6 +47,15 @@ class HacdScript : ZilchComponent
     if(event.Key == Keys.T)
     {
       this.ToggleGraphicsMesh();
+    }
+    if(event.Key == Keys.Three)
+    {
+      this.Model.Visible = !this.Model.Visible;
+    }
+    if(event.Key == Keys.Two)
+    {
+      if(this.OriginalModel != null)
+        this.OriginalModel.Model.Visible = !this.OriginalModel.Model.Visible;
     }
   }
 

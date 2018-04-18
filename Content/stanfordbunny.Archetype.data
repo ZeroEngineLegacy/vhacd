@@ -1,0 +1,258 @@
+[Version:1]
+Cog 
+{
+	var Name = "stanfordbunny"
+	Transform 
+	{
+		var Translation = Real3{0, 0, 0}
+		var Scale = Real3{1, 1, 1}
+		var Rotation = Quaternion{0, 0, 0, 1}
+	}
+	Hierarchy 
+	{
+		Cog [Id:0x5af13083c0afe93c]
+		{
+			var Name = "StanfordBunny"
+			Transform 
+			{
+				var Translation = Real3{0, -16.4211006, 0}
+				var Scale = Real3{1, 1, 1}
+				var Rotation = Quaternion{0, 0, 0, 1}
+			}
+			Model 
+			{
+				var Visible = true
+				var ViewCulling = true
+				var VisibilityEvents = true
+				var OverrideBoundingBox = false
+				var LocalAabbCenter = Real3{0, 0, 0}
+				var LocalAabbHalfExtents = Real3{1, 1, 1}
+				var GroupSortValue = 0
+				var Material = "583afb5e7bf75e18:ZeroMaterial"
+				var Mesh = "5af13082c0d20dda:stanfordbunny"
+			}
+		}
+		Cog [Id:0x5af13083c0afe942]
+		{
+			var Name = "LightPreset"
+			Transform 
+			{
+				var Translation = Real3{0, -16.4211006, 0}
+				var Scale = Real3{1, 1, 1}
+				var Rotation = Quaternion{0, 0, 0, 1}
+			}
+			Hierarchy 
+			{
+				Cog [Id:0x5af13083c0afe944]
+				{
+					var Name = "FillLightTranslation"
+					Transform 
+					{
+						var Translation = Real3{7453.01318, 6061.64746, 0}
+						var Scale = Real3{1, 1, 1}
+						var Rotation = Quaternion{0, 0, 0, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5af13083c0afe945]
+						{
+							var Name = "FillLightRotation"
+							Transform 
+							{
+								var Translation = Real3{0, 0, 0}
+								var Scale = Real3{1, 1, 1}
+								var Rotation = Quaternion{-0.446165562, 0.548576593, 1.05367119e-08, 0.707106769}
+							}
+							Hierarchy 
+							{
+								Cog [Id:0x5af13083c0afe947]
+								{
+									var Name = "FillLightPostRotation"
+									Transform 
+									{
+										var Translation = Real3{0, 0, 0}
+										var Scale = Real3{1, 1, 1}
+										var Rotation = Quaternion{-0.707106829, 0, 0, 0.707106769}
+									}
+									Hierarchy 
+									{
+										Cog [Id:0x5af13083c0afe948]
+										{
+											var Name = "FillLight"
+											Transform 
+											{
+												var Translation = Real3{0, 0, 0}
+												var Scale = Real3{1, 1, 1}
+												var Rotation = Quaternion{0, 0, 0, 1}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				Cog [Id:0x5af13083c0afe94a]
+				{
+					var Name = "BackLightTranslation"
+					Transform 
+					{
+						var Translation = Real3{-2977.10889, 2116.75171, -3414.11572}
+						var Scale = Real3{1, 1, 1}
+						var Rotation = Quaternion{0, 0, 0, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5af13083c0afe94b]
+						{
+							var Name = "BackLightRotation"
+							Transform 
+							{
+								var Translation = Real3{0, 0, 0}
+								var Scale = Real3{1, 0.99999994, 0.999999881}
+								var Rotation = Quaternion{0.531537771, 0.747582197, -6.97636509e-08, -0.398231655}
+							}
+							Hierarchy 
+							{
+								Cog [Id:0x5af13083c0afe94d]
+								{
+									var Name = "BackLightPostRotation"
+									Transform 
+									{
+										var Translation = Real3{0, 0, 0}
+										var Scale = Real3{1, 1, 1}
+										var Rotation = Quaternion{-0.707106829, 0, 0, 0.707106769}
+									}
+									Hierarchy 
+									{
+										Cog [Id:0x5af13083c0afe94e]
+										{
+											var Name = "BackLight"
+											Transform 
+											{
+												var Translation = Real3{0, 0, 0}
+												var Scale = Real3{1, 1, 1}
+												var Rotation = Quaternion{0, 0, 0, 1}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				Cog [Id:0x5af13083c0afe94f]
+				{
+					var Name = "KeyLightTranslation"
+					Transform 
+					{
+						var Translation = Real3{-2639.1665, 3327.10083, 2639.1665}
+						var Scale = Real3{1, 1, 1}
+						var Rotation = Quaternion{0, 0, 0, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5af13083c0afe951]
+						{
+							var Name = "KeyLightRotation"
+							Transform 
+							{
+								var Translation = Real3{0, 0, 0}
+								var Scale = Real3{1, 0.99999994, 0.99999994}
+								var Rotation = Quaternion{-0.380665004, -0.301956087, 0, 0.874023199}
+							}
+							Hierarchy 
+							{
+								Cog [Id:0x5af13083c0afe952]
+								{
+									var Name = "KeyLightPostRotation"
+									Transform 
+									{
+										var Translation = Real3{0, 0, 0}
+										var Scale = Real3{1, 1, 1}
+										var Rotation = Quaternion{-0.707106829, 0, 0, 0.707106769}
+									}
+									Hierarchy 
+									{
+										Cog [Id:0x5af13083c0afe954]
+										{
+											var Name = "KeyLight"
+											Transform 
+											{
+												var Translation = Real3{0, 0, 0}
+												var Scale = Real3{1, 1, 1}
+												var Rotation = Quaternion{0, 0, 0, 1}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		Cog [Id:0x5af13083c0afe955]
+		{
+			var Name = "CameraPreset"
+			Transform 
+			{
+				var Translation = Real3{0, -16.4211006, 0}
+				var Scale = Real3{1, 1, 1}
+				var Rotation = Quaternion{0, 0, 0, 1}
+			}
+			Hierarchy 
+			{
+				Cog [Id:0x5af13083c0afe956]
+				{
+					var Name = "TurnTableCameraTranslation"
+					Transform 
+					{
+						var Translation = Real3{-419.83725, 484.786316, 727.179443}
+						var Scale = Real3{1, 1, 1}
+						var Rotation = Quaternion{0, 0, 0, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5af13083c0afe958]
+						{
+							var Name = "TurnTableCameraRotation"
+							Transform 
+							{
+								var Translation = Real3{0, 0, 0}
+								var Scale = Real3{1, 1, 1}
+								var Rotation = Quaternion{-0.25, -0.25, -0.0669872984, 0.933012724}
+							}
+							Hierarchy 
+							{
+								Cog [Id:0x5af13083c0afe959]
+								{
+									var Name = "TurnTableCameraPostRotation"
+									Transform 
+									{
+										var Translation = Real3{0, 0, 0}
+										var Scale = Real3{1, 1, 1}
+										var Rotation = Quaternion{0, -0.707106829, 0, 0.707106769}
+									}
+									Hierarchy 
+									{
+										Cog [Id:0x5af13083c0afe95b]
+										{
+											var Name = "TurnTableCamera"
+											Transform 
+											{
+												var Translation = Real3{0, 0, 0}
+												var Scale = Real3{1, 1, 1}
+												var Rotation = Quaternion{0, 0, 0, 1}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
