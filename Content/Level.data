@@ -175,9 +175,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{-0.980728328, 3.67857075, 13.6128273}
+			var Translation = Real3{1.06826389, 1.45842755, 13.6991434}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{-0.0365933739, -0.0523030795, -0.00191786245, 0.99795872}
+			var Rotation = Quaternion{0.034024559, 0.0130798444, -0.000445330603, 0.999335349}
 		}
 		CameraViewport 
 		{
@@ -235,8 +235,8 @@ Level
 			var ControlMode = ControlMode.Orbit
 			var Previous3DMode = ControlMode.Orbit
 			var LookDistance = 15.7174377
-			var VerticalAngle = 0.0733036026
-			var HorizontalAngle = -6.17846107
+			var VerticalAngle = -0.0680680797
+			var HorizontalAngle = -6.30936098
 			var LookTarget = Real3{0.657849014, 2.52745748, -1.97652411}
 			var MoveSensitivity = 1
 		}
@@ -401,10 +401,11 @@ Level
 		ZeroVHacd 
 		{
 			var SubDivisions = Integer3{50, 80, 20}
-			var Recursions = 6
+			var MaxRecusionDepth = 6
 			var MaxHulls = 100
-			var Concavity = 0.00100000005
-			var Resample = false
+			var AllowedConcavityVolumeError = 0.00100000005
+			var ResampleMesh = false
+			var AllowedVolumeSurfaceAreaRatio = 0.800000012
 		}
 		RigidBody 
 		{
@@ -415,21 +416,6 @@ Level
 			var Asleep = false
 			var RotationLocked = false
 			var Mode2D = Mode2DStates.InheritFromSpace
-		}
-		HacdPlugin 
-		{
-			var Concavity = 0.00100000005
-			var Alpha = 0.0500000007
-			var Beta = 0.0500000007
-			var Resolution = 50000
-			var Mode = 0
-			var ConvexHullApproximation = true
-			var ConvexHullDownSamping = 4
-			var PlaneDownSampling = 4
-			var MinVolumePerCH = 9.99999975e-05
-			var MaxVerticesPerCH = 64
-			var MaxConvexHulls = 1024
-			var ProjectHullVertices = false
 		}
 	}
 	Cog [ContextId:8]
@@ -474,14 +460,6 @@ Level
 		{
 			var Active = true
 		}
-		ZeroVHacd 
-		{
-			var SubDivisions = Integer3{50, 50, 50}
-			var Recursions = 6
-			var MaxHulls = 100
-			var Concavity = 0.00100000005
-			var Resample = true
-		}
 		RigidBody 
 		{
 			var Velocity = Real3{0, 0, 0}
@@ -505,7 +483,7 @@ Level
 			var MinVolumePerCH = 9.99999975e-05
 			var MaxVerticesPerCH = 64
 			var MaxConvexHulls = 1024
-			var ProjectHullVertices = false
+			var ProjectHullVertices = true
 		}
 	}
 }

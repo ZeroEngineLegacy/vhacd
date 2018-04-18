@@ -4,7 +4,7 @@
 
 VHacd::VHacd()
 {
-  mResample = true;
+  mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
 }
@@ -12,7 +12,7 @@ VHacd::VHacd()
 void VHacd::Compute(const Integer3& subDivisions, int recursions, Mesh* mesh)
 {
   mSubDivisions = subDivisions;
-  mRecursions = recursions;
+  mMaxRecusionDepth = recursions;
 
   Initialize(mesh);
   ComputeApproximateConvexDecomposition();
@@ -78,7 +78,7 @@ void VHacd::ComputeApproximateConvexDecomposition()
 void VHacd::Recurse(int depth)
 {
   // Cap out at some max recursion depth
-  if (depth >= mRecursions)
+  if (depth >= mMaxRecusionDepth)
     return;
 
   // We'll have at max have 2 times as many voxelizers 
@@ -341,7 +341,7 @@ void VHacd::FindHullsToMerge(Zilch::Array<Real>& volumes, Zilch::Array<Real>& co
 
 void VHacd::Resample()
 {
-  if (!mResample)
+  if (!mResampleMesh)
     return;
 
   for (size_t i = 0; i < mHulls.Size(); ++i)

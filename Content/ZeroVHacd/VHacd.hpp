@@ -48,9 +48,9 @@ public:
   Zero::Array<QuickHull> mHulls;
 
   Integer3 mSubDivisions;
-  int mRecursions;
+  int mMaxRecusionDepth;
   int mMaxHulls;
-  bool mResample;
+  bool mResampleMesh;
   Real mAllowedConcavityVolumeError;
   Real mAllowedVolumeSurfaceAreaRatio;
 

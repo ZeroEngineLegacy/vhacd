@@ -22,10 +22,10 @@ public:
   
 private:
   Integer3 mSubDivisions;
-  int mRecursions;
+  int mMaxRecusionDepth;
   int mMaxHulls;
   Real mAllowedConcavityVolumeError;
-  bool mResample;
+  bool mResampleMesh;
   Real mAllowedVolumeSurfaceAreaRatio;
 
   VHacd mVHacd;
