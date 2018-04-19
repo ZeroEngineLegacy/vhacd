@@ -7,11 +7,13 @@ VHacd::VHacd()
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
+  mBalanceWeight = 0.05f;
+  mSymmetryWeight = 0.05f;
 }
 
-void VHacd::Compute(const Integer3& subDivisions, int recursions, Mesh* mesh)
+void VHacd::Compute(Real fidelity, int recursions, Mesh* mesh)
 {
-  mSubDivisions = subDivisions;
+  mFidelity = fidelity;
   mMaxRecusionDepth = recursions;
 
   Initialize(mesh);
@@ -34,6 +36,51 @@ void VHacd::Clear()
   mHulls.Clear();
 }
 
+void VHacd::ComputeSubDivisions(Aabb& aabb)
+{
+  float minVoxels = 100;
+  float maxVoxels = 300000;
+  // Use quadratic interpolation to get a better feel from fidelity
+  float t = mFidelity * mFidelity;
+  int targetVoxelCount = (int)Math::Lerp(minVoxels, maxVoxels, t);
+
+  Real3 extents = aabb.GetSize();
+  Real volume = extents.x * extents.y * extents.z;
+  Real xySA = extents.x * extents.y;
+  Real xzSA = extents.x * extents.z;
+  Real yzSA = extents.y * extents.z;
+
+  Real targetVoxelVolume = volume / targetVoxelCount;
+  Real targetVoxelSize = Math::Pow(targetVoxelVolume, 1 / 3.0f);
+
+  // Given a target voxel count, how do we "best" split up the given volume?
+  int largestAxis = 0;
+  if (extents.x > extents.y && extents.x > extents.z)
+    largestAxis = 0;
+  else if (extents.y > extents.x && extents.y > extents.z)
+    largestAxis = 1;
+  else
+    largestAxis = 2;
+
+  // Find the which two axis have the largest surface area
+  int offAxis = 0;
+  if (xySA > xzSA && xySA > yzSA)
+    offAxis = 2;
+  else if (xzSA > xySA && xzSA > yzSA)
+    offAxis = 1;
+  else
+    offAxis = 0;
+
+  int axis1 = (largestAxis + 1) % 3;
+  int axis2 = (largestAxis + 2) % 3;
+  //Real targetVoxelSize = Math::Ceil(cubicRoot / extents[largestAxis]);
+  Integer3 old = mSubDivisions;
+  mSubDivisions[largestAxis] = (int)Math::Ceil(extents[largestAxis] / targetVoxelSize);
+  mSubDivisions[axis1] = (int)Math::Ceil(extents[axis1] / targetVoxelSize);
+  mSubDivisions[axis2] = (int)Math::Ceil(extents[axis2] / targetVoxelSize);
+  //mSubDivisions = Integer3(1, 1, 1);
+}
+
 void VHacd::Initialize(Mesh* mesh)
 {
   // Construct a more run-time friend mesh format
@@ -42,6 +89,8 @@ void VHacd::Initialize(Mesh* mesh)
   Aabb aabb = mMesh.mAabb;
   // Expand the initial aabb by a small amount to account for float errors
   aabb = Aabb::BuildFromCenterAndHalfExtents(aabb.GetCenter(), aabb.GetHalfSize() * 1.1f);
+
+  ComputeSubDivisions(aabb);
 
   // Build the first voxelizer
   Voxelizer& voxelizer = mVoxelizers.PushBack();
@@ -245,10 +294,9 @@ float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
   // Since plane.Normal is axis aligned then this simplifies to:
   Real symmetry = w * voxelizer.mRevolutionAxis[axis];
 
-  // These 3 scores are then combined with a few weight values (penalize most heavily based upon concavity)
-  float balanceWeight = 0.05f;
-  float symmetryWeight = 0.05f;
-  Real score = concavityError + balanceWeight * balance + symmetryWeight * symmetry;
+  // These 3 scores are then combined with a few weight values (penalize most heavily based upon concavity).
+  // For unknown reason, the other weights are also scaled by the concavity error (so they become worth less the less concave it is?)
+  Real score = concavityError + mBalanceWeight * balance * concavityError + mSymmetryWeight * symmetry * concavityError;
 
   return score;
 }

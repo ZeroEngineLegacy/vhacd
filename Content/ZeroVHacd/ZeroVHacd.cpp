@@ -10,22 +10,27 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindMethod(Compute);
   ZilchBindMethod(GetHullCount);
   ZilchBindMethod(GetHull);
-  ZilchBindFieldProperty(mSubDivisions);
+  ZilchBindGetterSetterProperty(Fidelity);
   ZilchBindFieldProperty(mMaxRecusionDepth);
   ZilchBindFieldProperty(mMaxHulls);
   ZilchBindFieldProperty(mAllowedConcavityVolumeError);
   ZilchBindFieldProperty(mResampleMesh);
   ZilchBindFieldProperty(mAllowedVolumeSurfaceAreaRatio);
+  ZilchBindFieldProperty(mBalanceWeight);
+  ZilchBindFieldProperty(mSymmetryWeight);
 }
 
 ZeroVHacd::ZeroVHacd()
 {
+  mFidelity = 0.75f;
   mSubDivisions = Integer3(50, 50, 50);
   mMaxRecusionDepth = 6;
   mMaxHulls = 15;
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
+  mBalanceWeight = 0.05f;
+  mSymmetryWeight = 0.05f;
 }
 
 ZeroVHacd::~ZeroVHacd()
@@ -42,7 +47,9 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
   mVHacd.mResampleMesh = mResampleMesh;
   mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
-  mVHacd.Compute(mSubDivisions, mMaxRecusionDepth, mesh);
+  mVHacd.mBalanceWeight = mBalanceWeight;
+  mVHacd.mSymmetryWeight = mSymmetryWeight;
+  mVHacd.Compute(mFidelity, mMaxRecusionDepth, mesh);
 
   mHulls.Clear();
   mHulls.Resize(mVHacd.mHulls.Size());
@@ -60,6 +67,16 @@ void ZeroVHacd::Clear()
   mHulls.Clear();
 
   mVHacd.Clear();
+}
+
+Real ZeroVHacd::GetFidelity()
+{
+  return mFidelity;
+}
+
+void ZeroVHacd::SetFidelity(Real fidelity)
+{
+  mFidelity = Math::Clamp(fidelity, 0.0f, 1.0f);
 }
 
 int ZeroVHacd::GetHullCount()

@@ -9,7 +9,7 @@ class VHacd
 public:
   VHacd();
 
-  void Compute(const Integer3& subDivisions, int recursions, Mesh* mesh);
+  void Compute(Real fidelity, int recursions, Mesh* mesh);
   void Clear();
 
 
@@ -26,6 +26,7 @@ public:
     int mAxis;
   };
 
+  void ComputeSubDivisions(Aabb& aabb);
   void Initialize(Mesh* mesh);
   void ComputeApproximateConvexDecomposition();
   void Recurse(int depth);
@@ -47,6 +48,7 @@ public:
   Zero::Array<Voxelizer> mFinalVoxelizers;
   Zero::Array<QuickHull> mHulls;
 
+  Real mFidelity;
   Integer3 mSubDivisions;
   int mMaxRecusionDepth;
   int mMaxHulls;
@@ -55,6 +57,8 @@ public:
   Real mAllowedVolumeSurfaceAreaRatio;
 
   Real mInitialConvexHullVolume;
+  Real mBalanceWeight;
+  Real mSymmetryWeight;
 
   TriangleMesh mMesh;
 };

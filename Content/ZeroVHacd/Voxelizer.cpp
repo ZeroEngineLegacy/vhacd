@@ -311,6 +311,6 @@ void Voxelizer::ComputeSymmetryComponents()
   size_t axis1 = (primaryAxis + 1) % 3;
   size_t axis2 = (primaryAxis + 2) % 3;
   numer = Math::Sq(mEigenValues[axis1] - mEigenValues[axis2]);
-  denom = Math::Sq(Math::Abs(mEigenValues[axis1]) + Math::Abs(mEigenValues[axis2]));
+  denom = Math::Sq(mEigenValues[axis1]) + Math::Sq(Math::Abs(mEigenValues[axis2]));
   mRevolutionWeight = 1 - numer / denom;
 }

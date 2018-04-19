@@ -17,16 +17,22 @@ public:
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
   void Clear();
 
+  Real GetFidelity();
+  void SetFidelity(Real fidelity);
+
   int GetHullCount();
   Zilch::HandleOf<ZeroEngine::QuickHull3D> GetHull(int index);
   
 private:
+  Real mFidelity;
   Integer3 mSubDivisions;
   int mMaxRecusionDepth;
   int mMaxHulls;
   Real mAllowedConcavityVolumeError;
   bool mResampleMesh;
   Real mAllowedVolumeSurfaceAreaRatio;
+  Real mBalanceWeight;
+  Real mSymmetryWeight;
 
   VHacd mVHacd;
 

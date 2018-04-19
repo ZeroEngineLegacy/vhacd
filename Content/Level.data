@@ -175,9 +175,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{1.06826389, 1.45842755, 13.6991434}
+			var Translation = Real3{24.8522453, 6.13296032, 9.6534977}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{0.034024559, 0.0130798444, -0.000445330603, 0.999335349}
+			var Rotation = Quaternion{-0.0666904226, 0.566689134, 0.0460924283, 0.819933712}
 		}
 		CameraViewport 
 		{
@@ -234,10 +234,10 @@ Level
 		{
 			var ControlMode = ControlMode.Orbit
 			var Previous3DMode = ControlMode.Orbit
-			var LookDistance = 15.7174377
-			var VerticalAngle = -0.0680680797
-			var HorizontalAngle = -6.30936098
-			var LookTarget = Real3{0.657849014, 2.52745748, -1.97652411}
+			var LookDistance = 25.9136677
+			var VerticalAngle = 0.162315384
+			var HorizontalAngle = -7.49269533
+			var LookTarget = Real3{0.930114627, 1.94521844, 0.613992274}
 			var MoveSensitivity = 1
 		}
 	}
@@ -361,7 +361,7 @@ Level
 		var Name = "Hacd"
 		Transform 
 		{
-			var Translation = Real3{0, 0, 0}
+			var Translation = Real3{2.16711617, 0, 0}
 			var Scale = Real3{1, 1, 1}
 			var Rotation = Quaternion{0, 0, 0, 1}
 		}
@@ -375,7 +375,7 @@ Level
 			var LocalAabbHalfExtents = Real3{1, 1, 1}
 			var GroupSortValue = 0
 			var Material = "5a9acdd308c66f53:SolidWireFrame"
-			var Mesh = "5a8f28ea0d46ffdd:Axe01"
+			var Mesh = "5af13092c5c7e1bd:JeepBody"
 		}
 		MultiConvexMeshCollider 
 		{
@@ -400,12 +400,14 @@ Level
 		}
 		ZeroVHacd 
 		{
-			var SubDivisions = Integer3{50, 80, 20}
-			var MaxRecusionDepth = 6
-			var MaxHulls = 100
+			var Fidelity = 0.5
+			var MaxRecusionDepth = 15
+			var MaxHulls = 250
 			var AllowedConcavityVolumeError = 0.00100000005
 			var ResampleMesh = false
 			var AllowedVolumeSurfaceAreaRatio = 0.800000012
+			var BalanceWeight = 0.0500000007
+			var SymmetryWeight = 0.0500000007
 		}
 		RigidBody 
 		{
@@ -423,7 +425,7 @@ Level
 		var Name = "Hacd"
 		Transform 
 		{
-			var Translation = Real3{3.85280585, 0, 0}
+			var Translation = Real3{10.3431749, 0, 0}
 			var Scale = Real3{1, 1, 1}
 			var Rotation = Quaternion{0, 0, 0, 1}
 		}
@@ -437,7 +439,7 @@ Level
 			var LocalAabbHalfExtents = Real3{1, 1, 1}
 			var GroupSortValue = 0
 			var Material = "5a9acdd308c66f53:SolidWireFrame"
-			var Mesh = "5a8f28ea0d46ffdd:Axe01"
+			var Mesh = "5a9a1fe39e3e9342:hornbug"
 		}
 		MultiConvexMeshCollider 
 		{
