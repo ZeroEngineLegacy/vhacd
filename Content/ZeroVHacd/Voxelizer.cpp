@@ -267,8 +267,12 @@ void Voxelizer::ComputeEigenValuesAndVectors(Real3& eigenValues, Matrix3& eigenV
       for (int x = 0; x < mSubDivisions.x; ++x)
       {
         Integer3 voxelCoord = Integer3(x, y, z);
-        Aabb voxelAabb = GetVoxelAabb(voxelCoord);
-        points.PushBack(voxelAabb.GetCenter());
+        VoxelState::Enum voxelState = GetVoxel(voxelCoord);
+        if(voxelState == VoxelState::Inside || voxelState == VoxelState::Surface)
+        {
+          Aabb voxelAabb = GetVoxelAabb(voxelCoord);
+          points.PushBack(voxelAabb.GetCenter());
+        }
       }
     }
   }
