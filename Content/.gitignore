@@ -1,4 +1,5 @@
 syntax: glob
 
-Hacd/
+Hacd/Debug/
+Hacd/Release/
 *-zilchPlugin
