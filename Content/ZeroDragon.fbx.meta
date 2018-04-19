@@ -1,0 +1,44 @@
+[Version:1]
+GeometryContent 
+{
+	GeometryImport 
+	{
+		var OriginOffset = Real3{0, 0, 0}
+		var ScaleFactor = 0.00999999978
+		var ChangeBasis = false
+		var XBasisTo = BasisType.PositiveX
+		var YBasisTo = BasisType.PositiveY
+		var ZBasisTo = BasisType.PositiveZ
+	}
+	MeshBuilder 
+	{
+		var GenerateSmoothNormals = false
+		var SmoothingAngleDegreesThreshold = 30
+		var GenerateTangentSpace = true
+		var InvertUvYAxis = false
+		var FlipWindingOrder = false
+		var FlipNormals = false
+		var Meshes = Array
+		{
+			Object
+			{
+				var Name = "ZeroDragon_polySurface56GeneratedMeshNode0"
+				var ResourceId = 0x5a8e2b78289f61c5
+			}
+			Object
+			{
+				var Name = "ZeroDragon_polySurface56GeneratedMeshNode1"
+				var ResourceId = 0x5a8e2b78289f61d1
+			}
+			Object
+			{
+				var Name = "ZeroDragon_polySurface56GeneratedMeshNode2"
+				var ResourceId = 0x5a8e2b78289f61d5
+			}
+		}
+	}
+	GeneratedArchetype 
+	{
+		var ResourceId = 0x5a8e2b7928961027
+	}
+}

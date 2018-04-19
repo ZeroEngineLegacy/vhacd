@@ -1,0 +1,171 @@
+[Version:1]
+Cog 
+{
+	var Name = "ZeroDragon"
+	Transform 
+	{
+		var Translation = Real3{0, 0, 0}
+		var Scale = Real3{1, 1, 1}
+		var Rotation = Quaternion{0, 0, 0, 1}
+	}
+	Hierarchy 
+	{
+		Cog [Id:0x5a8e2b78297c526a]
+		{
+			var Name = "polySurface56RotationPivot"
+			Transform 
+			{
+				var Translation = Real3{0, 2.31226039, 0}
+				var Scale = Real3{1, 1, 1}
+				var Rotation = Quaternion{0, 0, 0, 1}
+			}
+			Hierarchy 
+			{
+				Cog [Id:0x5a8e2b78297c526f]
+				{
+					var Name = "polySurface56RotationPivotInverse"
+					Transform 
+					{
+						var Translation = Real3{0, -2.31226039, 0}
+						var Scale = Real3{1, 1, 1}
+						var Rotation = Quaternion{0, 0, 0, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5a8e2b78297c5270]
+						{
+							var Name = "polySurface56ScalingOffset"
+							Transform 
+							{
+								var Translation = Real3{0, -228.913788, 0}
+								var Scale = Real3{1, 1, 1}
+								var Rotation = Quaternion{0, 0, 0, 1}
+							}
+							Hierarchy 
+							{
+								Cog [Id:0x5a8e2b78297c5272]
+								{
+									var Name = "polySurface56ScalingPivot"
+									Transform 
+									{
+										var Translation = Real3{0, 231.226044, 0}
+										var Scale = Real3{1, 1, 1}
+										var Rotation = Quaternion{0, 0, 0, 1}
+									}
+									Hierarchy 
+									{
+										Cog [Id:0x5a8e2b78297c5273]
+										{
+											var Name = "polySurface56Scaling"
+											Transform 
+											{
+												var Translation = Real3{0, 0, 0}
+												var Scale = Real3{0.00999999978, 0.00999999978, 0.00999999978}
+												var Rotation = Quaternion{0, 0, 0, 1}
+											}
+											Hierarchy 
+											{
+												Cog [Id:0x5a8e2b78297c5275]
+												{
+													var Name = "polySurface56ScalingPivotInverse"
+													Transform 
+													{
+														var Translation = Real3{0, -231.226044, 0}
+														var Scale = Real3{1, 1, 1}
+														var Rotation = Quaternion{0, 0, 0, 1}
+													}
+													Hierarchy 
+													{
+														Cog [Id:0x5a8e2b78297c5276]
+														{
+															var Name = "polySurface56"
+															Transform 
+															{
+																var Translation = Real3{0, 0, 0}
+																var Scale = Real3{1, 1, 1}
+																var Rotation = Quaternion{0, 0, 0, 1}
+															}
+															Hierarchy 
+															{
+																Cog [Id:0x5a8e2b78297c5278]
+																{
+																	var Name = "polySurface56GeneratedMeshNode0"
+																	Transform 
+																	{
+																		var Translation = Real3{0, 0, 0}
+																		var Scale = Real3{1, 1, 1}
+																		var Rotation = Quaternion{0, 0, 0, 1}
+																	}
+																	Model 
+																	{
+																		var Visible = true
+																		var ViewCulling = true
+																		var VisibilityEvents = true
+																		var OverrideBoundingBox = false
+																		var LocalAabbCenter = Real3{0, 0, 0}
+																		var LocalAabbHalfExtents = Real3{1, 1, 1}
+																		var GroupSortValue = 0
+																		var Material = "583afb5e7bf75e18:ZeroMaterial"
+																		var Mesh = "5a8e2b78289f61c5:ZeroDragon_polySurface56GeneratedMeshNode0"
+																	}
+																}
+																Cog [Id:0x5a8e2b78297c527a]
+																{
+																	var Name = "polySurface56GeneratedMeshNode1"
+																	Transform 
+																	{
+																		var Translation = Real3{0, 0, 0}
+																		var Scale = Real3{1, 1, 1}
+																		var Rotation = Quaternion{0, 0, 0, 1}
+																	}
+																	Model 
+																	{
+																		var Visible = true
+																		var ViewCulling = true
+																		var VisibilityEvents = true
+																		var OverrideBoundingBox = false
+																		var LocalAabbCenter = Real3{0, 0, 0}
+																		var LocalAabbHalfExtents = Real3{1, 1, 1}
+																		var GroupSortValue = 0
+																		var Material = "583afb5e7bf75e18:ZeroMaterial"
+																		var Mesh = "5a8e2b78289f61d1:ZeroDragon_polySurface56GeneratedMeshNode1"
+																	}
+																}
+																Cog [Id:0x5a8e2b78297c527b]
+																{
+																	var Name = "polySurface56GeneratedMeshNode2"
+																	Transform 
+																	{
+																		var Translation = Real3{0, 0, 0}
+																		var Scale = Real3{1, 1, 1}
+																		var Rotation = Quaternion{0, 0, 0, 1}
+																	}
+																	Model 
+																	{
+																		var Visible = true
+																		var ViewCulling = true
+																		var VisibilityEvents = true
+																		var OverrideBoundingBox = false
+																		var LocalAabbCenter = Real3{0, 0, 0}
+																		var LocalAabbHalfExtents = Real3{1, 1, 1}
+																		var GroupSortValue = 0
+																		var Material = "583afb5e7bf75e18:ZeroMaterial"
+																		var Mesh = "5a8e2b78289f61d5:ZeroDragon_polySurface56GeneratedMeshNode2"
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
