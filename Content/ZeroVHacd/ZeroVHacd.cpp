@@ -55,7 +55,7 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   mHulls.Resize(mVHacd.mHulls.Size());
 
   for (size_t i = 0; i < mVHacd.mHulls.Size(); ++i)
-    mHulls[i] = mVHacd.mHulls[i].mQuickHull;
+    mHulls[i] = mVHacd.mHulls[i].ToHandle();
 }
 
 void ZeroVHacd::Clear()

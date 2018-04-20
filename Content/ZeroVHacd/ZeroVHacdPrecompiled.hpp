@@ -15,7 +15,15 @@ using Zilch::Real4;
 using Math::Vector2;
 using Math::Vector3;
 using Math::Matrix3;
+using Math::Mat3;
+using Math::Vec3;
+using Math::Vec3Param;
+using Math::Vec4;
+using Math::Vec4Param;
+using Math::IntVec3;
+using Math::real;
 using Zero::Array;
+using Zero::HashMap;
 
 using ZeroEngine::Mesh;
 #include "Shapes.hpp"
@@ -37,4 +45,5 @@ ZilchDeclareStaticLibraryAndPlugin(ZeroVHacdLibrary, ZeroVHacdPlugin);
 #include "QuickHull.hpp"
 #include "ExtraMath.hpp"
 #include "TriangleMesh.hpp"
+#include "QuickHull3D.hpp"
 // Auto Includes (used by Visual Studio plugins, do not remove this line)

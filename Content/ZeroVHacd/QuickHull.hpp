@@ -2,19 +2,22 @@
 
 class Voxelizer;
 
+#include "QuickHull3D.hpp"
+
 class QuickHull
 {
 public:
 
   bool Build(Voxelizer& voxelizer);
-  bool Build(Zilch::Array<Real3>& vertices);
   bool Build(QuickHull& hull0, QuickHull& hull1);
-  bool Build(ZeroEngine::QuickHull3D* hull0, ZeroEngine::QuickHull3D* hull1);
-  void AddPoints(ZeroEngine::QuickHull3D* hull);
+  bool Build(Zilch::Array<Real3>& vertices);
+  void Clear();
 
   Real ComputeVolume();
 
-  void BakeHull();
+  void BakeHull(Zero::QuickHull3D& quickHull);
+
+  Zilch::HandleOf<ZeroEngine::QuickHull3D> ToHandle();
 
   struct Edge
   {
@@ -30,6 +33,4 @@ public:
   Array<Real3> mVertices;
   Array<Edge> mEdges;
   Array<Face> mFaces;
-
-  Zilch::HandleOf<ZeroEngine::QuickHull3D> mQuickHull;
 };

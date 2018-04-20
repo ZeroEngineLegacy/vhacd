@@ -122,6 +122,7 @@ EXIT 0
   <ItemGroup>
     <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="QuickHull.cpp" />
+    <ClCompile Include="QuickHull3D.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="TriangleMesh.cpp" />
     <ClCompile Include="VHacd.cpp" />
@@ -136,6 +137,7 @@ EXIT 0
     <ClInclude Include="ExtraMath.hpp" />
     <ClInclude Include="Intersection.hpp" />
     <ClInclude Include="QuickHull.hpp" />
+    <ClInclude Include="QuickHull3D.hpp" />
     <ClInclude Include="Shapes.hpp" />
     <ClInclude Include="TriangleMesh.hpp" />
     <ClInclude Include="VHacd.hpp" />

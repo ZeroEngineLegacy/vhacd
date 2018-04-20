@@ -5,14 +5,13 @@
 
 bool QuickHull::Build(Voxelizer& voxelizer)
 {
-  mQuickHull = ZilchAllocate(ZeroEngine::QuickHull3D);
-  ZeroEngine::QuickHull3D* quickHull = mQuickHull;
-
   Real3 size = voxelizer.mAabb.GetHalfSize() * 2;
   Real3 delta = size / ToReal3(voxelizer.mSubDivisions);
   Real3 start = voxelizer.mAabb.mMin;
   Real3 halfOffset = Real3(0.5) * delta;
   Real3 offset = halfOffset;
+
+  Array<Real3> points;
 
   for (int z = 0; z < voxelizer.mSubDivisions.z; ++z)
   {
@@ -33,105 +32,53 @@ bool QuickHull::Build(Voxelizer& voxelizer)
         {
           Real3 min = voxelCenter - voxelizer.mVoxelSize * 0.5;
           Real3 max = voxelCenter + voxelizer.mVoxelSize * 0.5;
-          quickHull->Add(Real3(min.x, min.y, min.z));
-          quickHull->Add(Real3(min.x, min.y, max.z));
-          quickHull->Add(Real3(min.x, max.y, min.z));
-          quickHull->Add(Real3(min.x, max.y, max.z));
-          quickHull->Add(Real3(max.x, min.y, min.z));
-          quickHull->Add(Real3(max.x, min.y, max.z));
-          quickHull->Add(Real3(max.x, max.y, min.z));
-          quickHull->Add(Real3(max.x, max.y, max.z));
+          points.PushBack(Real3(min.x, min.y, min.z));
+          points.PushBack(Real3(min.x, min.y, max.z));
+          points.PushBack(Real3(min.x, max.y, min.z));
+          points.PushBack(Real3(min.x, max.y, max.z));
+          points.PushBack(Real3(max.x, min.y, min.z));
+          points.PushBack(Real3(max.x, min.y, max.z));
+          points.PushBack(Real3(max.x, max.y, min.z));
+          points.PushBack(Real3(max.x, max.y, max.z));
         }
       }
     }
   }
 
-  bool success = quickHull->Build();
-
-  if (success)
-    BakeHull();
-  return success;
-}
-
-bool QuickHull::Build(Zilch::Array<Real3>& vertices)
-{
-  mQuickHull = ZilchAllocate(ZeroEngine::QuickHull3D);
-  ZeroEngine::QuickHull3D* quickHull = mQuickHull;
-
-  for (size_t i = 0; i < vertices.Size(); ++i)
-  {
-    quickHull->Add(vertices[i]);
-  }
-  bool success = quickHull->Build();
-
-  if (success)
-    BakeHull();
-  return success;
+  return Build(points);
 }
 
 bool QuickHull::Build(QuickHull& hull0, QuickHull& hull1)
 {
-  return Build(hull0.mQuickHull, hull1.mQuickHull);
+  Clear();
+  Array<Real3> vertices;
+  vertices = hull0.mVertices;
+  //vertices.Insert(vertices.End(), hull1.mVertices.Begin, hull1.mVertices.End());
+  vertices.Append(hull1.mVertices.All());
+
+  return Build(vertices);
 }
 
-bool QuickHull::Build(ZeroEngine::QuickHull3D* hull0, ZeroEngine::QuickHull3D* hull1)
+bool QuickHull::Build(Zilch::Array<Real3>& vertices)
 {
-  mQuickHull = ZilchAllocate(ZeroEngine::QuickHull3D);
-  ZeroEngine::QuickHull3D* quickHull = mQuickHull;
-
-  AddPoints(hull0);
-  AddPoints(hull1);
-  bool success = quickHull->Build();
+  Clear();
+  Zero::QuickHull3D quickHull;
+  bool success = quickHull.Build(vertices);
 
   if (success)
-    BakeHull();
+    BakeHull(quickHull);
   return success;
 }
 
-void QuickHull::AddPoints(ZeroEngine::QuickHull3D* hull)
+void QuickHull::Clear()
 {
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMesh> meshHandle = hull->GetMesh();
-  ZeroEngine::IndexedHalfEdgeMesh* mesh = meshHandle;
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMeshVertexArray> vertices = mesh->GetVertices();
-
-  size_t count = vertices->GetCount();
-  for (size_t i = 0; i < count; ++i)
-    mQuickHull->Add(vertices->Get(i));
+  mVertices.Clear();
+  mEdges.Clear();
+  mFaces.Clear();
 }
 
 Real QuickHull::ComputeVolume()
 {
-  //Real hullVolume = 0.0;
-  //Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMesh> meshHandle = mQuickHull->GetMesh();
-  //ZeroEngine::IndexedHalfEdgeMesh* mesh = meshHandle;
-  //
-  //Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMeshFaceArrayRange> faces = mesh->GetFaces()->GetAll();
-  //for (; faces->GetIsNotEmpty(); faces->MoveNext())
-  //{
-  //  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeFace> faceHandle = faces->GetCurrent();
-  //  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeFaceEdgeIndexArray> faceEdges = faceHandle->GetEdges();
-  //  int edgeCount = faceEdges->GetCount();
-  //  for (int i = 2; i < edgeCount; ++i)
-  //  {
-  //    auto eI0 = faceEdges->Get(0);
-  //    auto eI1 = faceEdges->Get(i - 1);
-  //    auto eI2 = faceEdges->Get(i);
-  //
-  //    auto e0 = mesh->GetEdges()->Get(eI0);
-  //    auto e1 = mesh->GetEdges()->Get(eI1);
-  //    auto e2 = mesh->GetEdges()->Get(eI2);
-  //
-  //    Real3 p0 = mesh->GetVertices()->Get(e0->GetVertexIndex());
-  //    Real3 p1 = mesh->GetVertices()->Get(e1->GetVertexIndex());
-  //    Real3 p2 = mesh->GetVertices()->Get(e2->GetVertexIndex());
-  //
-  //    Math::Mat3 m(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
-  //    Real subVolume = m.Determinant() / 6.0f;
-  //    hullVolume += subVolume;
-  //  }
-  //}
-  //return hullVolume;
-
   Real hullVolume = 0.0;
   
   for (size_t fI = 0; fI < mFaces.Size(); ++fI)
@@ -161,53 +108,96 @@ Real QuickHull::ComputeVolume()
   return hullVolume;
 }
 
-void QuickHull::BakeHull()
+void QuickHull::BakeHull(Zero::QuickHull3D& quickHull)
 {
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMesh> meshHandle = mQuickHull->GetMesh();
-  ZeroEngine::IndexedHalfEdgeMesh* mesh = meshHandle;
+  typedef Zero::QuickHull3D::QuickHullVertex QuickHullVertex;
+  typedef Zero::QuickHull3D::QuickHullEdge QuickHullEdge;
+  typedef Zero::QuickHull3D::QuickHullFace QuickHullFace;
+  typedef Zero::QuickHull3D::VertexList VertexList;
+  typedef Zero::QuickHull3D::EdgeList EdgeList;
+  typedef Zero::QuickHull3D::FaceList FaceList;
 
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMeshVertexArray> verticesHandle = mesh->GetVertices();
-  ZeroEngine::IndexedHalfEdgeMeshVertexArray* vertices = verticesHandle;
-  size_t vertexCount = vertices->GetCount();
+  // Compute how much memory is required
+  int vertexCount = quickHull.ComputeVertexCount();
+  int halfEdgeCount = quickHull.ComputeHalfEdgeCount();
+  int faceCount = quickHull.ComputeFaceCount();
+
+  // Allocate all the memory we need
+  mVertices.Clear();
+  mEdges.Clear();
+  mFaces.Clear();
   mVertices.Resize(vertexCount);
-  for (size_t i = 0; i < vertexCount; ++i)
-  {
-    mVertices[i] = vertices->Get(i);
-  }
-
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMeshEdgeArray> edgesHandle = mesh->GetEdges();
-  ZeroEngine::IndexedHalfEdgeMeshEdgeArray* edges = edgesHandle;
-  size_t edgeCount = edges->GetCount();
-  mEdges.Resize(edgeCount);
-  for (size_t i = 0; i < edgeCount; ++i)
-  {
-    Zilch::HandleOf<ZeroEngine::IndexedHalfEdge> edgeHandle = edges->Get(i);
-    ZeroEngine::IndexedHalfEdge* edge = edgeHandle;
-
-    Edge& bakedEdge = mEdges[i];
-    bakedEdge.mFaceIndex = edge->GetFaceIndex();
-    bakedEdge.mTwinIndex = edge->GetTwinIndex();
-    bakedEdge.mVertexIndex = edge->GetVertexIndex();
-  }
-
-  Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeMeshFaceArray> facesHandle = mesh->GetFaces();
-  ZeroEngine::IndexedHalfEdgeMeshFaceArray* faces = facesHandle;
-  size_t faceCount = faces->GetCount();
+  mEdges.Resize(halfEdgeCount);
   mFaces.Resize(faceCount);
-  for (size_t i = 0; i < faceCount; ++i)
+
+  // Build up point to id mappings. Use an ordered hash-map for determinism.
+  typedef Zero::OrderedHashMap<QuickHullVertex*, int> VertexMap;
+  typedef Zero::OrderedHashMap<QuickHullEdge*, int> EdgeMap;
+  typedef Zero::OrderedHashMap<QuickHullFace*, int> FaceMap;
+  VertexMap mVertexIds;
+  EdgeMap mEdgeIds;
+  FaceMap mFaceIds;
+  int vertexId = 0;
+  int edgeId = 0;
+  int faceId = 0;
+
+  // Compute the ids of all faces, edges, and vertices
+  for (FaceList::range faces = quickHull.GetFaces(); !faces.Empty(); faces.PopFront())
   {
-    Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeFace> faceHandle = faces->Get(i);
-    ZeroEngine::IndexedHalfEdgeFace* face = faceHandle;
+    QuickHullFace* face = &faces.Front();
+    mFaceIds[face] = faceId;
+    ++faceId;
 
-    Zilch::HandleOf<ZeroEngine::IndexedHalfEdgeFaceEdgeIndexArray> faceEdgesHandle = face->GetEdges();
-    ZeroEngine::IndexedHalfEdgeFaceEdgeIndexArray* faceEdges = faceEdgesHandle;
-
-    size_t faceEdgesCount = faceEdges->GetCount();
-    Face& bakedFace = mFaces[i];
-    bakedFace.mEdges.Resize(faceEdgesCount);
-    for (size_t eI = 0; eI < faceEdgesCount; ++eI)
+    for (EdgeList::range edges = face->mEdges.All(); !edges.Empty(); edges.PopFront())
     {
-      bakedFace.mEdges[eI] = faceEdges->Get(eI);
+      QuickHullEdge* edge = &edges.Front();
+      mEdgeIds[edge] = edgeId;
+      ++edgeId;
+
+      // Check to see if this vertex has already been mapped
+      if (!mVertexIds.ContainsKey(edge->mTail))
+      {
+        mVertexIds[edge->mTail] = vertexId;
+        ++vertexId;
+      }
     }
   }
+
+  // Copy all vertices
+  forRange(VertexMap::PairType& pair, mVertexIds.All())
+  {
+    mVertices[pair.second] = pair.first->mPosition;
+  }
+  // Copy all edges, making sure to map the vertex, twin, and faces
+  forRange(EdgeMap::PairType& pair, mEdgeIds.All())
+  {
+    Edge* outEdge = &mEdges[pair.second];
+    QuickHullEdge* inEdge = pair.first;
+    outEdge->mFaceIndex = mFaceIds[inEdge->mFace];
+    outEdge->mVertexIndex = mVertexIds[inEdge->mTail];
+    outEdge->mTwinIndex = mEdgeIds[inEdge->mTwin];
+  }
+  // Copy all faces, making sure to map all edges
+  forRange(auto& pair, mFaceIds.All())
+  {
+    Face* outFace = &mFaces[pair.second];
+    QuickHullFace* inFace = pair.first;
+
+    for (EdgeList::range edges = inFace->mEdges.All(); !edges.Empty(); edges.PopFront())
+    {
+      QuickHullEdge* edge = &edges.Front();
+      outFace->mEdges.PushBack(mEdgeIds[edge]);
+    }
+  }
+}
+
+Zilch::HandleOf<ZeroEngine::QuickHull3D> QuickHull::ToHandle()
+{
+  Zilch::HandleOf<ZeroEngine::QuickHull3D> handle = ZilchAllocate(ZeroEngine::QuickHull3D);
+  for (size_t i = 0; i < mVertices.Size(); ++i)
+  {
+    handle->Add(mVertices[i]);
+  }
+  handle->Build();
+  return handle;
 }

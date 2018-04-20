@@ -32,7 +32,7 @@ void VHacd::Clear()
   mVoxelizers.Clear();
 
   for (size_t i = 0; i < mHulls.Size(); ++i)
-    mHulls[i].mQuickHull->Clear();
+    mHulls[i].Clear();
   mHulls.Clear();
 }
 
@@ -354,8 +354,7 @@ void VHacd::BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& comb
       QuickHull combinedHull;
       combinedHull.Build(mHulls[x], mHulls[y]);
       combinedVolumes[index] = combinedHull.ComputeVolume();
-      combinedHull.mQuickHull->Clear();
-      combinedHull.mQuickHull = nullptr;
+      combinedHull.Clear();
     }
   }
 }
