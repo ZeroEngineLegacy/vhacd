@@ -1,0 +1,41 @@
+[RunInEditor]
+class UiProgressBar : ZilchComponent
+{
+  [Property] var ProgressBarPath : CogPath = CogPath("ProgressBar");
+  [Property] var PaddingPath : CogPath = CogPath("Padding");
+  
+  [Property] var Percentage : Real
+  {
+    get { return this.GetPercentage(); }
+    set { this.SetPercentage(value); }
+  }
+  var PercentageInternal : Real = 0;
+  
+  function Initialize(init : CogInitializer)
+  {
+    //Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    //Zero.Conn
+  }
+
+  function OnLogicUpdate(event : UpdateEvent)
+  {
+  }
+  
+  function GetPercentage() : Real
+  {
+    return this.PercentageInternal;
+  }
+  
+  function SetPercentage(percentage : Real)
+  {
+    this.PercentageInternal = percentage;
+    
+    var progressWidget = this.ProgressBarPath.UiWidget;
+    if(progressWidget != null)
+      progressWidget.FlexSize = Real2(this.PercentageInternal, 1);
+      
+    var paddingWidget = this.PaddingPath.UiWidget;
+    if(paddingWidget != null)
+      paddingWidget.FlexSize = Real2(1 - this.PercentageInternal, 1);
+  }
+}

@@ -2,10 +2,10 @@
 
 #include "VHacd.hpp"
 
-const float sVoxelizationWeight = 0.05f;
+const float sVoxelizationWeight = 0.02f;
 const float sRecursionWeight = 0.8f;
-const float sMergingWeight = 0.1f;
-const float sResamplingWeight = 0.05f;
+const float sMergingWeight = 0.16f;
+const float sResamplingWeight = 0.02f;
 
 VHacd::VHacd()
 {
@@ -172,7 +172,7 @@ void VHacd::Recurse(int depth)
 bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth)
 {
   UpdateProgress("Splitting", mProgress);
-  float pow = Math::Pow(2.0f, depth);
+  float pow = Math::Pow(2.0f, (float)depth);
   float invPow = (1.0f / pow) * sRecursionWeight;
   mProgress += invPow / (float)mMaxRecusionDepth;
 
@@ -209,7 +209,7 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   if (isConvexEnough)
   {
     mFinalVoxelizers.PushBack(voxelizer);
-    mProgress += invPow * ((float)mMaxRecusionDepth - depth - 1)) / (float)mMaxRecusionDepth;
+    mProgress += invPow * ((float)mMaxRecusionDepth - depth - 1) / (float)mMaxRecusionDepth;
     UpdateProgress("Splitting", mProgress);
     return false;
   }
@@ -339,6 +339,8 @@ void VHacd::MergeHulls()
   volumes.Resize(mHulls.Size());
 
   Zilch::Array<float> combinedVolumes;
+
+  float percentIncrement = sMergingWeight / (mHulls.Size() - (float)mMaxHulls);
   
   while (mHulls.Size() > (size_t)mMaxHulls)
   {
@@ -358,9 +360,11 @@ void VHacd::MergeHulls()
 
     mHulls[iX] = combinedHull;
     mHulls.EraseAt(iY);
+
+    mProgress += percentIncrement;
+    UpdateProgress("Merging Hulls", mProgress);
   }
 
-  mProgress += sMergingWeight;
   UpdateProgress("Finished Merging Hulls", mProgress);
 }
 

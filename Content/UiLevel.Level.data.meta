@@ -1,0 +1,12 @@
+[Version:1]
+DataContent 
+{
+	DataBuilder 
+	{
+		var Name = "UiLevel"
+		var ResourceId = 0x5ae6016c530ef7a4
+		var LoaderType = "Level"
+		var Version = 0
+		var ShowInEditor = true
+	}
+}

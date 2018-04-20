@@ -1,0 +1,21 @@
+class ProgessListener : ZilchComponent
+{
+  [Property] var TextPath : CogPath = CogPath();
+  [Property] var ProgressPath : CogPath = CogPath();
+  
+  function Initialize(init : CogInitializer)
+  {
+    Zero.Connect(this.GameSession, "JobProgress", this.OnJobProgress);
+    //Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+  }
+
+  function OnJobProgress(event : DownloadJobEvent)
+  {
+    this.TextPath.SpriteText.Text = event.ProgressText;
+    this.ProgressPath.UiProgressBar.SetPercentage(event.Percentage);
+  }
+
+  function OnLogicUpdate(event : UpdateEvent)
+  {
+  }
+}

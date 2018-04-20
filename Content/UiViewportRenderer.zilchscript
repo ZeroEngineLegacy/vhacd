@@ -1,0 +1,63 @@
+class UiViewportRenderer : ZilchComponent
+{
+  [Dependency] var Area : Area;
+  [Dependency] var UiWidget : UiWidget;
+  
+  [Property] var Active : Boolean = true;
+  [Property] var LevelToLoad : Level = Level.Level;
+  
+  var ViewingSpace : Space;
+  [Property] var SpaceName : String = "GameLevel";
+  [Property] var ViewportToTrack : CogPath = CogPath("GameLevel:/GameCamera");
+  [Property] var CurrentViewportPath : CogPath = CogPath(":/GameCamera");
+  [Property] var RenderOrder : Integer = 2;
+  
+  function Initialize(init : CogInitializer)
+  {
+    if(!this.Active)
+      return;
+      
+    Zero.Connect(init, Events.AllObjectsInitialized, this.OnAllObjectsInitialized);
+    Zero.Connect(this.Owner, Events.UiPostUpdate, this.OnUiPostUpdate);
+  }
+
+  function OnAllObjectsInitialized(event : CogInitializerEvent)
+  {
+    this.ViewingSpace = this.GameSession.CreateNamedSpace(this.SpaceName, Archetype.DefaultSpace);
+    this.ViewingSpace.LoadLevel(this.LevelToLoad);
+    
+    var viewportCog = this.ViewportToTrack.Cog;
+    var viewport = viewportCog.CameraViewport;
+    viewport.RenderOrder = this.RenderOrder;
+  }
+  
+  function OnUiPostUpdate(event : UiTransformUpdateEvent)
+  {
+    this.UpdateViewport();
+  }
+  
+  function UpdateViewport()
+  {
+    var currentViewport = this.CurrentViewportPath.CameraViewport;
+    var trackingViewport = this.ViewportToTrack.CameraViewport;
+    if(currentViewport == null || trackingViewport == null)
+      return;
+    
+    var area = this.Area;
+    var uiWidget = this.UiWidget;
+    
+    var parentArea = area;
+    
+    var translation = uiWidget.WorldTranslation;
+    var currentSize = currentViewport.ViewportResolutionWithMargin;
+    var viewportOffset = currentViewport.ViewportOffsetWithMargin;
+    
+    // Negate the y-translation since viewport offsets have
+    // a different coordinate system than ui widgets
+    translation.Y *= -1;
+    
+    var offset = translation - viewportOffset;
+    trackingViewport.NormalizedOffset = offset / currentSize;
+    trackingViewport.NormalizedSize = parentArea.Size / currentSize;
+  }
+}

@@ -54,7 +54,7 @@ class VHacd : ZilchComponent
 
   function OnJobProgress(event : DownloadJobEvent)
   {
-    Console.WriteLine("`event.ProgressText`: `event.Percentage`");
+    this.GameSession.DispatchEvent(event.EventId, event);
   }
 
   function OnFinished(event : Event)
