@@ -113,6 +113,13 @@ Zilch::HandleOf<ZeroEngine::QuickHull3D> ZeroVHacd::GetHull(int index)
 
 void VHacdTask::Run()
 {
+  mVHacd.SetProgressCallback(&VHacdTask::ProgressCallback, this);
   mVHacd.Compute(mZeroVHacd->mFidelity, mZeroVHacd->mMaxRecusionDepth, mMesh);
   UpdateProgress(1);
+}
+
+void VHacdTask::ProgressCallback(const String& message, float percentage, void* clientData)
+{
+  VHacdTask* self = (VHacdTask*)clientData;
+  self->UpdateProgress(percentage, message);
 }

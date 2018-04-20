@@ -9,6 +9,9 @@ class VHacd
 public:
   VHacd();
 
+  typedef void(*CallbackFn)(const String& message, float percentage, void* clientData);
+  void SetProgressCallback(CallbackFn callbackFn, void* clientData);
+
   void Compute(Real fidelity, int recursions, TriangleMesh& mesh);
   void Clear();
 
@@ -43,6 +46,8 @@ public:
   void Resample();
   void Resample(QuickHull& hull);
 
+  void UpdateProgress(const String& message, float percentage);
+
   Zero::Array<Voxelizer> mVoxelizers;
 
   Zero::Array<Voxelizer> mFinalVoxelizers;
@@ -61,4 +66,7 @@ public:
   Real mSymmetryWeight;
 
   TriangleMesh mMesh;
+  CallbackFn mCallbackFn;
+  void* mClientData;
+  float mProgress;
 };

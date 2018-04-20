@@ -52,9 +52,9 @@ class VHacd : ZilchComponent
     Zero.Connect(this.Owner, "JobProgress", this.OnJobProgress);
   }
 
-  function OnJobProgress(event : Event)
+  function OnJobProgress(event : DownloadJobEvent)
   {
-    Console.WriteLine("Progress");
+    Console.WriteLine("`event.ProgressText`: `event.Percentage`");
   }
 
   function OnFinished(event : Event)

@@ -46,6 +46,8 @@ class VHacdTask : public BackgroundTask
 public:
   void Run() override;
 
+  static void ProgressCallback(const String& message, float percentage, void* clientData);
+
   ZeroVHacd* mZeroVHacd;
   TriangleMesh mMesh;
   VHacd mVHacd;

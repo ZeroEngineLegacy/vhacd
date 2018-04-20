@@ -2,8 +2,16 @@
 
 #include "VHacd.hpp"
 
+const float sVoxelizationWeight = 0.05f;
+const float sRecursionWeight = 0.8f;
+const float sMergingWeight = 0.1f;
+const float sResamplingWeight = 0.05f;
+
 VHacd::VHacd()
 {
+  mCallbackFn = nullptr;
+  mClientData = nullptr;
+
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
@@ -11,8 +19,15 @@ VHacd::VHacd()
   mSymmetryWeight = 0.05f;
 }
 
+void VHacd::SetProgressCallback(CallbackFn callbackFn, void* clientData)
+{
+  mCallbackFn = callbackFn;
+  mClientData = clientData;
+}
+
 void VHacd::Compute(Real fidelity, int recursions, TriangleMesh& mesh)
 {
+  mProgress = 0;
   mFidelity = fidelity;
   mMaxRecusionDepth = recursions;
 
@@ -92,6 +107,9 @@ void VHacd::Initialize(TriangleMesh& mesh)
 
   ComputeSubDivisions(aabb);
 
+  
+  UpdateProgress("Creating Voxel Grid", mProgress);
+
   // Build the first voxelizer
   Voxelizer& voxelizer = mVoxelizers.PushBack();
   voxelizer.CreateVoxels(mSubDivisions, aabb);
@@ -105,6 +123,9 @@ void VHacd::Initialize(TriangleMesh& mesh)
   // Flood fill to mark the inside/outside voxels
   voxelizer.FillOutside();
   voxelizer.Fill();
+
+  mProgress += sVoxelizationWeight;
+  UpdateProgress("Finished Voxelizing", mProgress);
 }
 
 void VHacd::ComputeApproximateConvexDecomposition()
@@ -129,6 +150,8 @@ void VHacd::Recurse(int depth)
   // Cap out at some max recursion depth
   if (depth >= mMaxRecusionDepth)
     return;
+  if (mVoxelizers.Empty())
+    return;
 
   // We'll have at max have 2 times as many voxelizers 
   Zero::Array<Voxelizer> newVoxelizers;
@@ -148,6 +171,11 @@ void VHacd::Recurse(int depth)
 
 bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth)
 {
+  UpdateProgress("Splitting", mProgress);
+  float pow = Math::Pow(2.0f, depth);
+  float invPow = (1.0f / pow) * sRecursionWeight;
+  mProgress += invPow / (float)mMaxRecusionDepth;
+
   Real voxelVolume = voxelizer.ComputeVolume();
   QuickHull hull;
 
@@ -181,6 +209,8 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   if (isConvexEnough)
   {
     mFinalVoxelizers.PushBack(voxelizer);
+    mProgress += invPow * ((float)mMaxRecusionDepth - depth - 1)) / (float)mMaxRecusionDepth;
+    UpdateProgress("Splitting", mProgress);
     return false;
   }
 
@@ -303,6 +333,8 @@ float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
 
 void VHacd::MergeHulls()
 {
+  UpdateProgress("Merging Hulls", mProgress);
+
   Zilch::Array<float> volumes;
   volumes.Resize(mHulls.Size());
 
@@ -327,6 +359,9 @@ void VHacd::MergeHulls()
     mHulls[iX] = combinedHull;
     mHulls.EraseAt(iY);
   }
+
+  mProgress += sMergingWeight;
+  UpdateProgress("Finished Merging Hulls", mProgress);
 }
 
 void VHacd::BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes)
@@ -391,8 +426,13 @@ void VHacd::Resample()
   if (!mResampleMesh)
     return;
 
+  UpdateProgress("Resampling", mProgress);
+
   for (size_t i = 0; i < mHulls.Size(); ++i)
     Resample(mHulls[i]);
+
+  mProgress += sResamplingWeight;
+  UpdateProgress("Finished Resampling", mProgress);
 }
 
 void VHacd::Resample(QuickHull& hull)
@@ -426,4 +466,10 @@ void VHacd::Resample(QuickHull& hull)
   }
 
   hull.Build(points);
+}
+
+void VHacd::UpdateProgress(const String& message, float percentage)
+{
+  if (mCallbackFn != nullptr)
+    mCallbackFn(message, percentage, mClientData);
 }
