@@ -11,7 +11,7 @@ VHacd::VHacd()
   mSymmetryWeight = 0.05f;
 }
 
-void VHacd::Compute(Real fidelity, int recursions, Mesh* mesh)
+void VHacd::Compute(Real fidelity, int recursions, TriangleMesh& mesh)
 {
   mFidelity = fidelity;
   mMaxRecusionDepth = recursions;
@@ -81,10 +81,10 @@ void VHacd::ComputeSubDivisions(Aabb& aabb)
   //mSubDivisions = Integer3(1, 1, 1);
 }
 
-void VHacd::Initialize(Mesh* mesh)
+void VHacd::Initialize(TriangleMesh& mesh)
 {
   // Construct a more run-time friend mesh format
-  mMesh.Create(mesh);
+  mMesh = mesh;
 
   Aabb aabb = mMesh.mAabb;
   // Expand the initial aabb by a small amount to account for float errors

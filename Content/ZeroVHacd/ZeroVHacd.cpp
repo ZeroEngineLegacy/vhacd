@@ -18,6 +18,9 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindFieldProperty(mAllowedVolumeSurfaceAreaRatio);
   ZilchBindFieldProperty(mBalanceWeight);
   ZilchBindFieldProperty(mSymmetryWeight);
+
+  ZilchBindMethod(Initialize);
+  ZilchBindMethod(OnJobProgress);
 }
 
 ZeroVHacd::ZeroVHacd()
@@ -37,25 +40,46 @@ ZeroVHacd::~ZeroVHacd()
 {
 }
 
+void ZeroVHacd::Initialize(ZeroEngine::CogInitializer* initializer)
+{
+  ZeroConnectThisTo(this->GetOwner(), "JobProgress", "OnJobProgress");
+}
+
+void ZeroVHacd::OnJobProgress(DownloadJobEvent* event)
+{
+  if (event->mPercentage >= 1.0f)
+  {
+    VHacdTask* task = (VHacdTask*)event->mTask;
+    mHulls.Resize(task->mVHacd.mHulls.Size());
+    
+    for (size_t i = 0; i < task->mVHacd.mHulls.Size(); ++i)
+      mHulls[i] = task->mVHacd.mHulls[i].ToHandle();
+
+    Zilch::HandleOf<ZeroEngine::ZilchEvent> toSend = ZilchAllocate(ZeroEngine::ZilchEvent);
+    GetOwner()->DispatchEvent("Finished", toSend);
+  }
+}
+
 void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
 {
   Clear();
 
   Mesh* mesh = meshHandle;
+  
+  VHacdTask* task = new VHacdTask();
+  task->mZeroVHacd = this;
+  task->mOwner = GetOwner();
 
-  mVHacd.mMaxHulls = mMaxHulls;
-  mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
-  mVHacd.mResampleMesh = mResampleMesh;
-  mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
-  mVHacd.mBalanceWeight = mBalanceWeight;
-  mVHacd.mSymmetryWeight = mSymmetryWeight;
-  mVHacd.Compute(mFidelity, mMaxRecusionDepth, mesh);
+  task->mVHacd.mMaxHulls = mMaxHulls;
+  task->mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
+  task->mVHacd.mResampleMesh = mResampleMesh;
+  task->mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
+  task->mVHacd.mBalanceWeight = mBalanceWeight;
+  task->mVHacd.mSymmetryWeight = mSymmetryWeight;
 
-  mHulls.Clear();
-  mHulls.Resize(mVHacd.mHulls.Size());
+  task->mMesh.Create(mesh);
 
-  for (size_t i = 0; i < mVHacd.mHulls.Size(); ++i)
-    mHulls[i] = mVHacd.mHulls[i].ToHandle();
+  JobSystem::GetInstance()->AddJob(task);
 }
 
 void ZeroVHacd::Clear()
@@ -65,8 +89,6 @@ void ZeroVHacd::Clear()
     mHulls[i]->Clear();
   }
   mHulls.Clear();
-
-  mVHacd.Clear();
 }
 
 Real ZeroVHacd::GetFidelity()
@@ -87,4 +109,10 @@ int ZeroVHacd::GetHullCount()
 Zilch::HandleOf<ZeroEngine::QuickHull3D> ZeroVHacd::GetHull(int index)
 {
   return mHulls[index];
+}
+
+void VHacdTask::Run()
+{
+  mVHacd.Compute(mZeroVHacd->mFidelity, mZeroVHacd->mMaxRecusionDepth, mMesh);
+  UpdateProgress(1);
 }

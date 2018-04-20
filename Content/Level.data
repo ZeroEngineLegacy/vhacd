@@ -38,6 +38,9 @@ Level
 			var HighlightInterval = 10
 			var FollowEditorCamera = false
 		}
+		JobManager 
+		{
+		}
 	}
 	Cog [ContextId:2]
 	{
@@ -386,6 +389,17 @@ Level
 			var Offset = Real3{0, 0, 0}
 			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
 		}
+		ZeroVHacd 
+		{
+			var Fidelity = 0.100000001
+			var MaxRecusionDepth = 15
+			var MaxHulls = 250
+			var AllowedConcavityVolumeError = 0.00100000005
+			var ResampleMesh = false
+			var AllowedVolumeSurfaceAreaRatio = 0.800000012
+			var BalanceWeight = 0.0500000007
+			var SymmetryWeight = 0.0500000007
+		}
 		VHacd 
 		{
 			var SubDivisions = Integer3{10, 10, 10}
@@ -397,17 +411,6 @@ Level
 		QuickHullRenderer 
 		{
 			var Active = true
-		}
-		ZeroVHacd 
-		{
-			var Fidelity = 0.5
-			var MaxRecusionDepth = 15
-			var MaxHulls = 250
-			var AllowedConcavityVolumeError = 0.00100000005
-			var ResampleMesh = false
-			var AllowedVolumeSurfaceAreaRatio = 0.800000012
-			var BalanceWeight = 0.0500000007
-			var SymmetryWeight = 0.0500000007
 		}
 		RigidBody 
 		{

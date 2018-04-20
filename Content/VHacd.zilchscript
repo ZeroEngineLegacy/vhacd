@@ -48,6 +48,33 @@ class VHacd : ZilchComponent
   {
     Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
     Zero.Connect(Zero.Keyboard, Events.KeyDown, this.OnKeyDown);
+    Zero.Connect(this.Owner, "Finished", this.OnFinished);
+    Zero.Connect(this.Owner, "JobProgress", this.OnJobProgress);
+  }
+
+  function OnJobProgress(event : Event)
+  {
+    Console.WriteLine("Progress");
+  }
+
+  function OnFinished(event : Event)
+  {
+    this.Owner.QuickHullRenderer.Clear();
+    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+    for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
+    {
+      scope//if(i == 1)
+      {
+        var hull = zeroVhacd.GetHull(i);
+        var child = this.Space.Create(Archetype.QuickHullRenderer);
+        child.AttachTo(this.Owner);
+        child.Transform.Translation = Real3();
+      
+        child.QuickHullRenderer.Clear();
+        child.QuickHullRenderer.Add(hull);
+        //this.Owner.QuickHullRenderer.Add(hull);
+      }
+    }
   }
 
   function OnKeyDown(event : KeyboardEvent)
@@ -106,21 +133,29 @@ class VHacd : ZilchComponent
     //this.Recurse(1);
     
     
-    this.Owner.QuickHullRenderer.Clear();
-    for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
-    {
-      scope//if(i == 1)
-      {
-        var hull = zeroVhacd.GetHull(i);
-        child = this.Space.Create(Archetype.QuickHullRenderer);
-        child.AttachTo(this.Owner);
-        child.Transform.Translation = Real3();
+    //this.Owner.QuickHullRenderer.Clear();
+    //for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
+    //{
+    //  scope//if(i == 1)
+    //  {
+    //    var hull = zeroVhacd.GetHull(i);
+    //    child = this.Space.Create(Archetype.QuickHullRenderer);
+    //    child.AttachTo(this.Owner);
+    //    child.Transform.Translation = Real3();
         
-        child.QuickHullRenderer.Clear();
-        child.QuickHullRenderer.Add(hull);
-        //this.Owner.QuickHullRenderer.Add(hull);
-      }
-    }
+    //    child.QuickHullRenderer.Clear();
+    //    child.QuickHullRenderer.Add(hull);
+    //    //this.Owner.QuickHullRenderer.Add(hull);
+    //  }
+    //}
+    
+    
+    
+    
+    
+    
+    
+    
     //foreach(var v in this.Voxelizers)
     //{
     //  v.ComputeHull();

@@ -4,6 +4,8 @@
 ZilchDefineStaticLibraryAndPlugin(ZeroVHacdLibrary, ZeroVHacdPlugin, ZilchDependencyStub(Core) ZilchDependencyStub(ZeroEngine))
 {
   ZilchInitializeType(ZeroVHacd);
+  ZilchInitializeType(JobManager);
+  ZilchInitializeType(DownloadJobEvent);
   // Auto Initialize (used by Visual Studio plugins, do not remove this line)
 }
 

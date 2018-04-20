@@ -34,6 +34,12 @@
     <ClCompile Include="QuickHull3D.cpp">
       <Filter>Plugin</Filter>
     </ClCompile>
+    <ClCompile Include="JobManager.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Jobs.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Versions\$(OS)-$(PlatformShortName)-$(ZeroVersion)\ZeroEngine.hpp">
@@ -73,6 +79,12 @@
       <Filter>Plugin</Filter>
     </ClInclude>
     <ClInclude Include="QuickHull3D.hpp">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="JobManager.hpp">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Jobs.hpp">
       <Filter>Plugin</Filter>
     </ClInclude>
   </ItemGroup>

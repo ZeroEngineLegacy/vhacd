@@ -24,6 +24,7 @@ using Math::IntVec3;
 using Math::real;
 using Zero::Array;
 using Zero::HashMap;
+using Zilch::String;
 
 using ZeroEngine::Mesh;
 #include "Shapes.hpp"
@@ -46,4 +47,6 @@ ZilchDeclareStaticLibraryAndPlugin(ZeroVHacdLibrary, ZeroVHacdPlugin);
 #include "ExtraMath.hpp"
 #include "TriangleMesh.hpp"
 #include "QuickHull3D.hpp"
+#include "JobManager.hpp"
+#include "Jobs.hpp"
 // Auto Includes (used by Visual Studio plugins, do not remove this line)

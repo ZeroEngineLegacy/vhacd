@@ -121,6 +121,8 @@ EXIT 0
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Intersection.cpp" />
+    <ClCompile Include="JobManager.cpp" />
+    <ClCompile Include="Jobs.cpp" />
     <ClCompile Include="QuickHull.cpp" />
     <ClCompile Include="QuickHull3D.cpp" />
     <ClCompile Include="Shapes.cpp" />
@@ -136,6 +138,8 @@ EXIT 0
   <ItemGroup>
     <ClInclude Include="ExtraMath.hpp" />
     <ClInclude Include="Intersection.hpp" />
+    <ClInclude Include="JobManager.hpp" />
+    <ClInclude Include="Jobs.hpp" />
     <ClInclude Include="QuickHull.hpp" />
     <ClInclude Include="QuickHull3D.hpp" />
     <ClInclude Include="Shapes.hpp" />

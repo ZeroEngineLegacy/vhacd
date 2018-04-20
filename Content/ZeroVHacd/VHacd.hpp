@@ -9,7 +9,7 @@ class VHacd
 public:
   VHacd();
 
-  void Compute(Real fidelity, int recursions, Mesh* mesh);
+  void Compute(Real fidelity, int recursions, TriangleMesh& mesh);
   void Clear();
 
 
@@ -27,7 +27,7 @@ public:
   };
 
   void ComputeSubDivisions(Aabb& aabb);
-  void Initialize(Mesh* mesh);
+  void Initialize(TriangleMesh& mesh);
   void ComputeApproximateConvexDecomposition();
   void Recurse(int depth);
 
