@@ -11,11 +11,14 @@ ZilchDefineType(JobManager, builder, type)
   // Note: All event connection methods must be bound
   ZilchBindMethod(OnCogDestroy);
   ZilchBindMethod(OnLogicUpdate);
+
+  ZilchBindGetterSetterProperty(ThreadCount);
 }
 
 //***************************************************************************
 JobManager::JobManager()
 {
+  mThreadCount = 3;
 }
 
 //***************************************************************************
@@ -28,7 +31,7 @@ void JobManager::Initialize(ZeroEngine::CogInitializer* initializer)
 {
   ZeroConnectThisTo(this->GetSpace(), "LogicUpdate", "OnLogicUpdate");
 
-  JobSystem::Initialize();
+  JobSystem::Initialize(mThreadCount);
   JobSystem* jobSystem = JobSystem::GetInstance();
 
   ZeroConnectThisTo(this->GetSpace(), "CogDestroy", "OnCogDestroy");
@@ -66,6 +69,16 @@ void JobManager::OnLogicUpdate(ZeroEngine::UpdateEvent* event)
 
     delete pEvent;
   }
+}
+
+int JobManager::GetThreadCount()
+{
+  return mThreadCount;
+}
+
+void JobManager::SetThreadCount(int threadCount)
+{
+  mThreadCount = Math::Clamp(threadCount, 1, 20);
 }
 
 //***************************************************************************

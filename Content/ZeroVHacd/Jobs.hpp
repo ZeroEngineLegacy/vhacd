@@ -38,11 +38,11 @@ private:
   ~JobSystem();
 public:
 
-  static void Initialize();
+  static void Initialize(int threads = 3);
   static void Shutdown();
   static JobSystem* GetInstance();
 
-  void Startup();
+  void Startup(int threads);
   void ShutdownInstance();
 
   void AddJob(Job* job);
@@ -54,7 +54,8 @@ public:
   Zero::Array<Job*> mActiveJobs;
   Zero::Array<Job*> mFinishedJobs;
   Zero::Array<ProgressEvent*> mEvents;
-  Zero::Thread mThread;
+
+  Array<Zero::Thread*> mThreads;
 
   bool mShutingdown;
 };

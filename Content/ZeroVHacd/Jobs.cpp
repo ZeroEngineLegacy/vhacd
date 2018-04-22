@@ -72,10 +72,14 @@ void BackgroundTask::Finished()
 
 JobSystem* sJobSystem = nullptr;
 
-void JobSystem::Initialize()
+void JobSystem::Initialize(int threads)
 {
+  // Already Running
+  if (sJobSystem != nullptr)
+    return;
+
   sJobSystem = new JobSystem();
-  sJobSystem->Startup();
+  sJobSystem->Startup(threads);
 }
 
 void JobSystem::Shutdown()
@@ -108,18 +112,30 @@ void JobSystem::ShutdownInstance()
   for (size_t i = 0; i < mActiveJobs.Size(); ++i)
     mActiveJobs[i]->MarkForShutdown();
   sThreadLock.Unlock();
-  mThread.WaitForCompletion();
+
+  for (size_t i = 0; i < mThreads.Size(); ++i)
+    mThreads[i]->WaitForCompletion();
+
+  for (size_t i = 0; i < mThreads.Size(); ++i)
+    delete mThreads[i];
+  mThreads.Clear();
 }
 
-void JobSystem::Startup()
+void JobSystem::Startup(int threads)
 {
-  if (mThread.IsValid())
-  {
+  if (!mShutingdown)
     ShutdownInstance();
-  }
 
-  mThread.Initialize(ThreadFn, this, "MyThread");
-  mThread.Resume();
+  mShutingdown = false;
+  sThreadLock.Lock();
+  mThreads.Resize(threads);
+  for (size_t i = 0; i < mThreads.Size(); ++i)
+  {
+    mThreads[i] = new Zero::Thread();
+    mThreads[i]->Initialize(ThreadFn, this, "BackgroundThread");
+    mThreads[i]->Resume();
+  }
+  sThreadLock.Unlock();
 }
 
 void JobSystem::AddJob(Job* job)
@@ -133,7 +149,6 @@ void JobSystem::AddEvent(ProgressEvent* event)
 {
   sThreadLock.Lock();
   mEvents.PushBack(event);
-  //event->mOwner->DispatchEvent();
   sThreadLock.Unlock();
 }
 

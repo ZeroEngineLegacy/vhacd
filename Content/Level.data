@@ -40,6 +40,7 @@ Level
 		}
 		JobManager 
 		{
+			var ThreadCount = 3
 		}
 	}
 	Cog [ContextId:2]

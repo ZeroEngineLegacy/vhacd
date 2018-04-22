@@ -14,6 +14,11 @@ public:
   void OnCogDestroy(ZeroEngine::Event* e);
   
   void OnLogicUpdate(ZeroEngine::UpdateEvent* event);
+
+  int GetThreadCount();
+  void SetThreadCount(int threadCount);
+
+  int mThreadCount;
 };
 
 // An example of a custom event that we can send
