@@ -6,10 +6,14 @@ ZilchDefineType(ZeroVHacd, builder, type)
   // This is required for component binding
   ZilchBindDestructor();
   ZilchBindConstructor();
+  ZilchBindMethod(Initialize);
 
   ZilchBindMethod(Compute);
   ZilchBindMethod(GetHullCount);
   ZilchBindMethod(GetHull);
+  ZilchBindMethod(OnJobProgress);
+  ZilchBindMethod(OnJobFinished);
+
   ZilchBindGetterSetterProperty(Fidelity);
   ZilchBindFieldProperty(mMaxRecusionDepth);
   ZilchBindFieldProperty(mMaxHulls);
@@ -18,10 +22,6 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindFieldProperty(mAllowedVolumeSurfaceAreaRatio);
   ZilchBindFieldProperty(mBalanceWeight);
   ZilchBindFieldProperty(mSymmetryWeight);
-
-  ZilchBindMethod(Initialize);
-  ZilchBindMethod(OnJobProgress);
-  ZilchBindMethod(OnJobFinished);
 }
 
 ZeroVHacd::ZeroVHacd()

@@ -14,30 +14,33 @@
       <Filter>Plugin</Filter>
     </ClCompile>
     <ClCompile Include="VHacd.cpp">
-      <Filter>Plugin</Filter>
+      <Filter>ZeroVHacd</Filter>
     </ClCompile>
     <ClCompile Include="Voxelizer.cpp">
-      <Filter>Plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="Shapes.cpp">
-      <Filter>Plugin</Filter>
+      <Filter>ZeroVHacd</Filter>
     </ClCompile>
     <ClCompile Include="Intersection.cpp">
-      <Filter>Plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="QuickHull.cpp">
-      <Filter>Plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangleMesh.cpp">
-      <Filter>Plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="QuickHull3D.cpp">
-      <Filter>Plugin</Filter>
+      <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="JobManager.cpp">
-      <Filter>Plugin</Filter>
+      <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Jobs.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="QuickHull.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="QuickHull3D.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleMesh.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="VHacd_Orig.cpp">
       <Filter>Plugin</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,33 +61,36 @@
       <Filter>Plugin</Filter>
     </ClInclude>
     <ClInclude Include="VHacd.hpp">
-      <Filter>Plugin</Filter>
+      <Filter>ZeroVHacd</Filter>
     </ClInclude>
     <ClInclude Include="Voxelizer.hpp">
-      <Filter>Plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes.hpp">
-      <Filter>Plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="Intersection.hpp">
-      <Filter>Plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="QuickHull.hpp">
-      <Filter>Plugin</Filter>
+      <Filter>ZeroVHacd</Filter>
     </ClInclude>
     <ClInclude Include="ExtraMath.hpp">
-      <Filter>Plugin</Filter>
+      <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="TriangleMesh.hpp">
-      <Filter>Plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="QuickHull3D.hpp">
-      <Filter>Plugin</Filter>
+    <ClInclude Include="Intersection.hpp">
+      <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="JobManager.hpp">
-      <Filter>Plugin</Filter>
+      <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Jobs.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="QuickHull.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="QuickHull3D.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="VHacd_Orig.hpp">
       <Filter>Plugin</Filter>
     </ClInclude>
   </ItemGroup>
@@ -94,6 +100,15 @@
     </Filter>
     <Filter Include="Plugin">
       <UniqueIdentifier>{54948aa7-0f0e-4833-80ac-e6f3967be802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ZeroVHacd">
+      <UniqueIdentifier>{b2587dfe-8f9d-4ce5-80aa-af15cd12cd0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{f0b9d3d8-8763-4f65-9233-d3d0fa7bcf56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VHacd">
+      <UniqueIdentifier>{d13cd5dd-8312-41a1-b6d2-2d7dfa651b68}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

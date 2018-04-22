@@ -477,10 +477,25 @@ Level
 		}
 		HacdPlugin 
 		{
+			var Concavity = 0.00999999978
+			var Alpha = 0.0500000007
+			var Beta = 0.0500000007
+			var Resolution = 5000
+			var Mode = 0
+			var ConvexHullApproximation = true
+			var ConvexHullDownSamping = 4
+			var PlaneDownSampling = 4
+			var MinVolumePerCH = 9.99999975e-05
+			var MaxVerticesPerCH = 64
+			var MaxConvexHulls = 1024
+			var ProjectHullVertices = false
+		}
+		VHacd_Orig 
+		{
 			var Concavity = 0.00100000005
 			var Alpha = 0.0500000007
 			var Beta = 0.0500000007
-			var Resolution = 50000
+			var Resolution = 100000
 			var Mode = 0
 			var ConvexHullApproximation = true
 			var ConvexHullDownSamping = 4

@@ -49,4 +49,5 @@ ZilchDeclareStaticLibraryAndPlugin(ZeroVHacdLibrary, ZeroVHacdPlugin);
 #include "QuickHull3D.hpp"
 #include "JobManager.hpp"
 #include "Jobs.hpp"
+#include "VHacd_Orig.hpp"
 // Auto Includes (used by Visual Studio plugins, do not remove this line)

@@ -20,6 +20,36 @@ class HacdScript : ZilchComponent
     this.OriginalMesh = this.Owner.Model.Mesh;
     Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
     Zero.Connect(Zero.Keyboard, Events.KeyDown, this.OnKeyDown);
+    
+    Zero.Connect(this.Owner, "Finished", this.OnFinished);
+    Zero.Connect(this.Owner, "JobProgress", this.OnJobProgress);
+  }
+  
+  function OnJobProgress(event : DownloadJobEvent)
+  {
+    this.GameSession.DispatchEvent(event.EventId, event);
+  }
+  
+  
+
+  function OnFinished(event : Event)
+  {
+    timeout(1000)
+    {
+      this.Owner.QuickHullRenderer.Clear();
+      var vhacd_Orig = this.Owner.GetComponentByName("VHacd_Orig") as VHacd_Orig;
+      
+      for(var i = 0; i < vhacd_Orig.GetHullCount(); ++i)
+      {
+        var hull = vhacd_Orig.GetHull(i);
+        var child = this.Space.Create(Archetype.QuickHullRenderer);
+        child.AttachTo(this.Owner);
+        child.Transform.Translation = Real3();
+      
+        child.QuickHullRenderer.Clear();
+        child.QuickHullRenderer.Add(hull);
+      }
+    }
   }
 
   function OnKeyDown(event : KeyboardEvent)
@@ -33,16 +63,15 @@ class HacdScript : ZilchComponent
       child.Model.Visible = false;
       this.OriginalModel = child;
     
-      var toSend = HacdPluginEvent();
-      toSend.Mesh = this.OriginalMesh;
-      toSend.PhysicsMesh = this.PhysicsMesh;
+      var vhacd_Orig = this.Owner.GetComponentByName("VHacd_Orig") as VHacd_Orig;
       timeout(1000)
-        this.Owner.DispatchEvent("Compute", toSend);
-      this.Owner.MultiConvexMeshCollider.Mesh = toSend.PhysicsMesh;
+        vhacd_Orig.Compute(this.OriginalMesh);
+      //this.Owner.MultiConvexMeshCollider.Mesh = toSend.PhysicsMesh;
       
-      this.Draw();
-      this.PhysicsToGraphicsMesh();
-      this.Owner.Model.Mesh = this.GraphicsMesh;
+      //this.Draw();
+      //this.PhysicsToGraphicsMesh();
+      //this.OnFinished();
+      //this.Owner.Model.Mesh = this.GraphicsMesh;
     }
     if(event.Key == Keys.T)
     {

@@ -128,6 +128,7 @@ EXIT 0
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="TriangleMesh.cpp" />
     <ClCompile Include="VHacd.cpp" />
+    <ClCompile Include="VHacd_Orig.cpp" />
     <ClCompile Include="Voxelizer.cpp" />
     <ClCompile Include="ZeroVHacd.cpp" />
     <ClCompile Include="ZeroVHacdPrecompiled.cpp">
@@ -145,6 +146,7 @@ EXIT 0
     <ClInclude Include="Shapes.hpp" />
     <ClInclude Include="TriangleMesh.hpp" />
     <ClInclude Include="VHacd.hpp" />
+    <ClInclude Include="VHacd_Orig.hpp" />
     <ClInclude Include="Voxelizer.hpp" />
     <ClInclude Include="ZeroVHacd.hpp" />
     <ClInclude Include="ZeroVHacdPrecompiled.hpp" />
@@ -166,6 +168,11 @@ EXIT 0
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="ZeroVisualizers.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hacd\Hacd.vcxproj">
+      <Project>{0fcbd806-d431-4d87-85ac-f984921478d7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
