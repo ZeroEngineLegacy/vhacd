@@ -381,7 +381,7 @@ Level
 		ZeroVHacd 
 		{
 			var Fidelity = 0.75
-			var Refinement = 1
+			var Refinement = 0.899999976
 			var MaxRecusionDepth = 20
 			var MaxHulls = 1024
 			var AllowedConcavityVolumeError = 0.00100000005

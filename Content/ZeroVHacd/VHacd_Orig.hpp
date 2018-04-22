@@ -20,7 +20,7 @@ public:
 
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
   void Cancel();
-  void OnJobFinished(DownloadJobEvent* event);
+  void OnJobFinished(PluginBackgroundTaskEvent* event);
 
   void Clear();
 

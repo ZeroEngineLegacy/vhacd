@@ -18,7 +18,6 @@ public:
   ZeroEngine::Cog* mOwner;
 };
 
-
 class ProgressEvent
 {
 public:

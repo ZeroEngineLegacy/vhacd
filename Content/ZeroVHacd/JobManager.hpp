@@ -21,8 +21,8 @@ public:
   int mThreadCount;
 };
 
-// An example of a custom event that we can send
-class DownloadJobEvent : public ZeroEngine::ZilchEvent
+// Sent for progress on a background task (in plugins)
+class PluginBackgroundTaskEvent : public ZeroEngine::ZilchEvent
 {
 public:
   ZilchDeclareType(Zilch::TypeCopyMode::ReferenceType);

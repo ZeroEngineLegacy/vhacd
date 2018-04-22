@@ -33,7 +33,7 @@ class ProgessListener : ZilchComponent
     this.ProgressListenerTarget.Cog.DispatchEvent("Cancel", ZilchEvent());
   }
 
-  function OnJobProgress(event : DownloadJobEvent)
+  function OnJobProgress(event : PluginBackgroundTaskEvent)
   {
     this.TotalPercentPath.UiProgressBar.SetPercentage(event.TotalPercentage);
     this.StepNamePath.UiText.Text = event.StepName;

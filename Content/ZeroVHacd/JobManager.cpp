@@ -60,7 +60,7 @@ void JobManager::OnLogicUpdate(ZeroEngine::UpdateEvent* event)
     
     if (pEvent->mOwner != nullptr)
     {
-      Zilch::HandleOf<DownloadJobEvent> toSend = ZilchAllocate(DownloadJobEvent);
+      Zilch::HandleOf<PluginBackgroundTaskEvent> toSend = ZilchAllocate(PluginBackgroundTaskEvent);
       toSend->mTask = pEvent->mTask;
       toSend->mTotalPercentage = pEvent->mTotalPercentage;
       toSend->mStepPercentage = pEvent->mStepPercentage;
@@ -84,7 +84,7 @@ void JobManager::SetThreadCount(int threadCount)
 }
 
 //***************************************************************************
-ZilchDefineType(DownloadJobEvent, builder, type)
+ZilchDefineType(PluginBackgroundTaskEvent, builder, type)
 {
   // This is required for event binding
   ZilchBindDestructor();

@@ -53,11 +53,11 @@ void ZeroVHacd::Initialize(ZeroEngine::CogInitializer* initializer)
   ZeroConnectThisTo(this->GetOwner(), "JobFinished", "OnJobFinished");
 }
 
-void ZeroVHacd::OnJobProgress(DownloadJobEvent* event)
+void ZeroVHacd::OnJobProgress(PluginBackgroundTaskEvent* event)
 {
 }
 
-void ZeroVHacd::OnJobFinished(DownloadJobEvent* event)
+void ZeroVHacd::OnJobFinished(PluginBackgroundTaskEvent* event)
 {
   VHacdTask* task = (VHacdTask*)event->mTask;
   mHulls.Resize(task->mVHacd.mHulls.Size());

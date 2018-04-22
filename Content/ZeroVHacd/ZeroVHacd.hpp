@@ -2,7 +2,7 @@
 #include "VHacd.hpp"
 #include "Jobs.hpp"
 #include "TriangleMesh.hpp"
-class DownloadJobEvent;
+class PluginBackgroundTaskEvent;
 
 // For more information on binding and using Zilch APIs, visit: http://zilch.digipen.edu/
 // For auto binding specifically, visit: http://zilch.digipen.edu/home/AutomaticBinding.html
@@ -18,8 +18,8 @@ public:
   ZeroVHacd();
   ~ZeroVHacd();
   void ZeroVHacd::Initialize(ZeroEngine::CogInitializer* initializer);
-  void OnJobProgress(DownloadJobEvent* event);
-  void OnJobFinished(DownloadJobEvent* event);
+  void OnJobProgress(PluginBackgroundTaskEvent* event);
+  void OnJobFinished(PluginBackgroundTaskEvent* event);
   
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
   void Cancel();

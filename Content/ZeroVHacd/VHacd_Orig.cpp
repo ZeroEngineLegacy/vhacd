@@ -70,7 +70,7 @@ void VHacd_Orig::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   JobSystem::GetInstance()->AddJob(mTask);
 }
 
-void VHacd_Orig::OnJobFinished(DownloadJobEvent* event)
+void VHacd_Orig::OnJobFinished(PluginBackgroundTaskEvent* event)
 {
   VHacd_OrigTask* task = (VHacd_OrigTask*)event->mTask;
   VHACD::IVHACD* vhacd = task->mVHacd;
