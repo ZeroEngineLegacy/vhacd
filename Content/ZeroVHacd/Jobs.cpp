@@ -19,7 +19,7 @@ Zero::OsInt ThreadFn(void* data)
     {
       job = jobSystem->mPendingJobs[0];
       jobSystem->mPendingJobs.PopFront();
-
+      jobSystem->mActiveJobs.PushBack(job);
     }
     sThreadLock.Unlock();
 
@@ -32,6 +32,7 @@ Zero::OsInt ThreadFn(void* data)
     job->Run();
 
     sThreadLock.Lock();
+    jobSystem->mActiveJobs.EraseValue(job);
     jobSystem->mFinishedJobs.PushBack(job);
     sThreadLock.Unlock();
   }
@@ -46,15 +47,27 @@ void BackgroundTask::UpdateProgress(float percentage)
 
 void BackgroundTask::UpdateProgress(float percentage, Zilch::StringParam message)
 {
+  UpdateProgress(percentage, message, "JobProgress");
+}
+
+void BackgroundTask::UpdateProgress(float percentage, Zilch::StringParam message, const String& eventName)
+{
   ProgressEvent* toSend = new ProgressEvent();
   toSend->mPercentage = percentage;
   toSend->mTask = this;
   toSend->mOwner = mOwner;
   toSend->mMessage = message;
+  toSend->mEventName = eventName;
 
   JobSystem* jobSystem = JobSystem::GetInstance();
-  if(jobSystem != nullptr)
+  if (jobSystem != nullptr)
     jobSystem->AddEvent(toSend);
+}
+
+void BackgroundTask::Finished()
+{
+  UpdateProgress(1.0f, String());
+  UpdateProgress(1.0f, String(), "JobFinished");
 }
 
 JobSystem* sJobSystem = nullptr;
@@ -91,6 +104,10 @@ JobSystem::~JobSystem()
 void JobSystem::ShutdownInstance()
 {
   mShutingdown = true;
+  sThreadLock.Lock();
+  for (size_t i = 0; i < mActiveJobs.Size(); ++i)
+    mActiveJobs[i]->MarkForShutdown();
+  sThreadLock.Unlock();
   mThread.WaitForCompletion();
 }
 

@@ -24,5 +24,6 @@ public:
 
   BackgroundTask* mTask;
   float mPercentage;
+  bool mFinished;
   String mProgressText;
 };

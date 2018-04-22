@@ -17,6 +17,7 @@ public:
   ~ZeroVHacd();
   void ZeroVHacd::Initialize(ZeroEngine::CogInitializer* initializer);
   void OnJobProgress(DownloadJobEvent* event);
+  void OnJobFinished(DownloadJobEvent* event);
   
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
   void Clear();
@@ -45,6 +46,7 @@ class VHacdTask : public BackgroundTask
 {
 public:
   void Run() override;
+  void MarkForShutdown() override;
 
   static void ProgressCallback(const String& message, float percentage, void* clientData);
 

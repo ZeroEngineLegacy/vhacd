@@ -61,7 +61,7 @@ void JobManager::OnLogicUpdate(ZeroEngine::UpdateEvent* event)
       toSend->mPercentage = pEvent->mPercentage;
       toSend->mProgressText = pEvent->mMessage;
       toSend->mTask = pEvent->mTask;
-      pEvent->mOwner->DispatchEvent("JobProgress", toSend);
+      pEvent->mOwner->DispatchEvent(pEvent->mEventName, toSend);
     }
 
     delete pEvent;
@@ -77,4 +77,5 @@ ZilchDefineType(DownloadJobEvent, builder, type)
 
   ZilchBindFieldProperty(mPercentage);
   ZilchBindFieldProperty(mProgressText);
+  ZilchBindFieldProperty(mFinished);
 }

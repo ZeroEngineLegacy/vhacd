@@ -11,6 +11,7 @@ VHacd::VHacd()
 {
   mCallbackFn = nullptr;
   mClientData = nullptr;
+  mForceStop = false;
 
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
@@ -148,7 +149,7 @@ void VHacd::ComputeApproximateConvexDecomposition()
 void VHacd::Recurse(int depth)
 {
   // Cap out at some max recursion depth
-  if (depth >= mMaxRecusionDepth)
+  if (depth >= mMaxRecusionDepth || mForceStop == true)
     return;
   if (mVoxelizers.Empty())
     return;
@@ -171,6 +172,9 @@ void VHacd::Recurse(int depth)
 
 bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth)
 {
+  if (mForceStop == true)
+    return false;
+
   UpdateProgress("Splitting", mProgress);
   float pow = Math::Pow(2.0f, (float)depth);
   float invPow = (1.0f / pow) * sRecursionWeight;
@@ -282,6 +286,9 @@ VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPla
 
 float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
 {
+  if (mForceStop == true)
+    return Math::PositiveMax();
+
   Voxelizer front;
   Voxelizer back;
   // Split along the given split plane into two pieces. If we failed then this probably was
@@ -344,6 +351,9 @@ void VHacd::MergeHulls()
   
   while (mHulls.Size() > (size_t)mMaxHulls)
   {
+    if (mForceStop == true)
+      break;
+
     // Rebuild the entire table (slow, only some rows change each time)
     BuildHullTable(volumes, combinedVolumes);
 
@@ -427,7 +437,7 @@ void VHacd::FindHullsToMerge(Zilch::Array<Real>& volumes, Zilch::Array<Real>& co
 
 void VHacd::Resample()
 {
-  if (!mResampleMesh)
+  if (!mResampleMesh || mForceStop == true)
     return;
 
   UpdateProgress("Resampling", mProgress);
@@ -451,6 +461,7 @@ void VHacd::Resample(QuickHull& hull)
   Real3 center = aabb.GetCenter();
   Real diagonal = Math::Length(aabb.mMax - aabb.mMin);
 
+  float subPercent = sResamplingWeight / ((float)points.Size() + mHulls.Size());
   for (size_t i = 0; i < points.Size(); ++i)
   {
     Ray ray;
@@ -467,6 +478,10 @@ void VHacd::Resample(QuickHull& hull)
       if (newDistance / diagonal < 0.05f)
         points[i] = newPoint;
     }
+
+    mProgress += subPercent;
+    if(i % 10)
+      UpdateProgress("Resampling", mProgress);
   }
 
   hull.Build(points);

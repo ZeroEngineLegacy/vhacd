@@ -59,20 +59,24 @@ class VHacd : ZilchComponent
 
   function OnFinished(event : Event)
   {
-    this.Owner.QuickHullRenderer.Clear();
-    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
-    for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
+    timeout(1000)
     {
-      scope//if(i == 1)
+      this.Owner.QuickHullRenderer.Clear();
+      var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+      Console.WriteLine("Count", zeroVhacd.GetHullCount());
+      for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
       {
-        var hull = zeroVhacd.GetHull(i);
-        var child = this.Space.Create(Archetype.QuickHullRenderer);
-        child.AttachTo(this.Owner);
-        child.Transform.Translation = Real3();
-      
-        child.QuickHullRenderer.Clear();
-        child.QuickHullRenderer.Add(hull);
-        //this.Owner.QuickHullRenderer.Add(hull);
+        scope//if(i == 1)
+        {
+          var hull = zeroVhacd.GetHull(i);
+          var child = this.Space.Create(Archetype.QuickHullRenderer);
+          child.AttachTo(this.Owner);
+          child.Transform.Translation = Real3();
+        
+          child.QuickHullRenderer.Clear();
+          child.QuickHullRenderer.Add(hull);
+          //this.Owner.QuickHullRenderer.Add(hull);
+        }
       }
     }
   }

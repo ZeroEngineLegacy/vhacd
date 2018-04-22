@@ -69,4 +69,5 @@ public:
   CallbackFn mCallbackFn;
   void* mClientData;
   float mProgress;
+  bool mForceStop;
 };

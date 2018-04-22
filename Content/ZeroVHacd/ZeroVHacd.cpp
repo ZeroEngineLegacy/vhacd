@@ -21,6 +21,7 @@ ZilchDefineType(ZeroVHacd, builder, type)
 
   ZilchBindMethod(Initialize);
   ZilchBindMethod(OnJobProgress);
+  ZilchBindMethod(OnJobFinished);
 }
 
 ZeroVHacd::ZeroVHacd()
@@ -43,21 +44,23 @@ ZeroVHacd::~ZeroVHacd()
 void ZeroVHacd::Initialize(ZeroEngine::CogInitializer* initializer)
 {
   ZeroConnectThisTo(this->GetOwner(), "JobProgress", "OnJobProgress");
+  ZeroConnectThisTo(this->GetOwner(), "JobFinished", "OnJobFinished");
 }
 
 void ZeroVHacd::OnJobProgress(DownloadJobEvent* event)
 {
-  if (event->mPercentage >= 1.0f)
-  {
-    VHacdTask* task = (VHacdTask*)event->mTask;
-    mHulls.Resize(task->mVHacd.mHulls.Size());
-    
-    for (size_t i = 0; i < task->mVHacd.mHulls.Size(); ++i)
-      mHulls[i] = task->mVHacd.mHulls[i].ToHandle();
+}
 
-    Zilch::HandleOf<ZeroEngine::ZilchEvent> toSend = ZilchAllocate(ZeroEngine::ZilchEvent);
-    GetOwner()->DispatchEvent("Finished", toSend);
-  }
+void ZeroVHacd::OnJobFinished(DownloadJobEvent* event)
+{
+  VHacdTask* task = (VHacdTask*)event->mTask;
+  mHulls.Resize(task->mVHacd.mHulls.Size());
+
+  for (size_t i = 0; i < task->mVHacd.mHulls.Size(); ++i)
+    mHulls[i] = task->mVHacd.mHulls[i].ToHandle();
+
+  Zilch::HandleOf<ZeroEngine::ZilchEvent> toSend = ZilchAllocate(ZeroEngine::ZilchEvent);
+  GetOwner()->DispatchEvent("Finished", toSend);
 }
 
 void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
@@ -115,7 +118,12 @@ void VHacdTask::Run()
 {
   mVHacd.SetProgressCallback(&VHacdTask::ProgressCallback, this);
   mVHacd.Compute(mZeroVHacd->mFidelity, mZeroVHacd->mMaxRecusionDepth, mMesh);
-  UpdateProgress(1);
+  Finished();
+}
+
+void VHacdTask::MarkForShutdown()
+{
+  mVHacd.mForceStop = true;
 }
 
 void VHacdTask::ProgressCallback(const String& message, float percentage, void* clientData)
