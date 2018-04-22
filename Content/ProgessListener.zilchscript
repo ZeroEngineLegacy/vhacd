@@ -1,18 +1,44 @@
 class ProgessListener : ZilchComponent
 {
-  [Property] var TextPath : CogPath = CogPath();
-  [Property] var ProgressPath : CogPath = CogPath();
+  [Property] var ProgressListenerTarget : CogPath = CogPath();
+  
+  [Property] var TotalPercentPath : CogPath = CogPath();
+  [Property] var StepNamePath : CogPath = CogPath();
+  [Property] var StepPercentPath : CogPath = CogPath();
+  [Property] var StepMessagePath : CogPath = CogPath();
+  [Property] var RunButtonPath : CogPath = CogPath();
+  [Property] var CancelButtonPath : CogPath = CogPath();
   
   function Initialize(init : CogInitializer)
   {
-    Zero.Connect(this.GameSession, "JobProgress", this.OnJobProgress);
+    //Zero.Connect(this.GameSession, "JobProgress", this.OnJobProgress);
+    Zero.Connect(init, Events.AllObjectsInitialized, this.OnAllObjectsInitialized);
     //Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+  }
+
+  function OnAllObjectsInitialized(event : CogInitializerEvent)
+  {
+    Zero.Connect(this.ProgressListenerTarget.Cog, "JobProgress", this.OnJobProgress);
+    Zero.Connect(this.RunButtonPath.Cog, Events.ButtonClicked, this.OnRunClicked);
+    Zero.Connect(this.CancelButtonPath.Cog, Events.ButtonClicked, this.OnCancelClicked);
+  }
+  
+  function OnRunClicked(event : Event)
+  {
+    this.ProgressListenerTarget.Cog.DispatchEvent("Run", ZilchEvent());
+  }
+  
+  function OnCancelClicked(event : Event)
+  {
+    this.ProgressListenerTarget.Cog.DispatchEvent("Cancel", ZilchEvent());
   }
 
   function OnJobProgress(event : DownloadJobEvent)
   {
-    this.TextPath.SpriteText.Text = event.ProgressText;
-    this.ProgressPath.UiProgressBar.SetPercentage(event.Percentage);
+    this.TotalPercentPath.UiProgressBar.SetPercentage(event.TotalPercentage);
+    this.StepNamePath.UiText.Text = event.StepName;
+    this.StepPercentPath.UiProgressBar.SetPercentage(event.StepPercentage);
+    this.StepMessagePath.UiText.Text = event.StepMessage;
   }
 
   function OnLogicUpdate(event : UpdateEvent)

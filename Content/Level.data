@@ -179,9 +179,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{24.8522453, 6.13296032, 9.6534977}
+			var Translation = Real3{-13.8424911, 12.3197718, 40.06493}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{-0.0666904226, 0.566689134, 0.0460924283, 0.819933712}
+			var Rotation = Quaternion{-0.0991086811, -0.232225969, -0.0237935018, 0.967306852}
 		}
 		CameraViewport 
 		{
@@ -238,10 +238,10 @@ Level
 		{
 			var ControlMode = ControlMode.Orbit
 			var Previous3DMode = ControlMode.Orbit
-			var LookDistance = 25.9136677
-			var VerticalAngle = 0.162315384
-			var HorizontalAngle = -7.49269533
-			var LookTarget = Real3{0.930114627, 1.94521844, 0.613992274}
+			var LookDistance = 38.6586418
+			var VerticalAngle = 0.204204172
+			var HorizontalAngle = -5.81195402
+			var LookTarget = Real3{3.34325242, 4.48026562, 6.33537674}
 			var MoveSensitivity = 1
 		}
 	}
@@ -250,9 +250,9 @@ Level
 		var Name = "GameCamera"
 		Transform 
 		{
-			var Translation = Real3{-4.07291889, 1.19462204, 4.25322914}
+			var Translation = Real3{6.70610619, 11.8054466, 21.4104366}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{-0.112476885, -0.288735032, -0.0341793597, 0.950164676}
+			var Rotation = Quaternion{-0.123877726, 0, 0, 0.99229753}
 		}
 		SelectionIcon 
 		{
@@ -331,38 +331,7 @@ Level
 	}
 	Cog [ContextId:6]
 	{
-		var Name = "Cube"
-		Transform 
-		{
-			var Translation = Real3{0, -4.92409706, 0}
-			var Scale = Real3{20, 1, 20}
-			var Rotation = Quaternion{0, 0, 0, 1}
-		}
-		Model 
-		{
-			var Visible = true
-			var ViewCulling = true
-			var VisibilityEvents = true
-			var OverrideBoundingBox = false
-			var LocalAabbCenter = Real3{0, 0, 0}
-			var LocalAabbHalfExtents = Real3{1, 1, 1}
-			var GroupSortValue = 0
-			var Material = "583afb5e7bf75e18:ZeroMaterial"
-			var Mesh = "4de0354322b345ae:Cube"
-		}
-		BoxCollider 
-		{
-			var Ghost = false
-			var SendsEvents = true
-			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
-			var CollisionGroup = "4e740859314e5515:DefaultGroup"
-			var Offset = Real3{0, 0, 0}
-			var HalfSize = Real3{0.5, 0.5, 0.5}
-		}
-	}
-	Cog [ContextId:7]
-	{
-		var Name = "Hacd"
+		var Name = "ZeroVHacd"
 		Transform 
 		{
 			var Translation = Real3{2.16711617, 0, 0}
@@ -379,39 +348,7 @@ Level
 			var LocalAabbHalfExtents = Real3{1, 1, 1}
 			var GroupSortValue = 0
 			var Material = "5a9acdd308c66f53:SolidWireFrame"
-			var Mesh = "5af13092c5c7e1bd:JeepBody"
-		}
-		MultiConvexMeshCollider 
-		{
-			var Ghost = false
-			var SendsEvents = true
-			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
-			var CollisionGroup = "4e740859314e5515:DefaultGroup"
-			var Offset = Real3{0, 0, 0}
-			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
-		}
-		ZeroVHacd 
-		{
-			var Fidelity = 0.100000001
-			var MaxRecusionDepth = 15
-			var MaxHulls = 250
-			var AllowedConcavityVolumeError = 0.00100000005
-			var ResampleMesh = false
-			var AllowedVolumeSurfaceAreaRatio = 0.800000012
-			var BalanceWeight = 0.0500000007
-			var SymmetryWeight = 0.0500000007
-		}
-		VHacd 
-		{
-			var SubDivisions = Integer3{10, 10, 10}
-			var AabbDrawScale = 0.25
-			var ComputeHull = false
-			var Recursions = 2
-			var DebugIndex = 0
-		}
-		QuickHullRenderer 
-		{
-			var Active = true
+			var Mesh = "5a8e2b78289f61d1:ZeroDragon_polySurface56GeneratedMeshNode1"
 		}
 		RigidBody 
 		{
@@ -423,48 +360,56 @@ Level
 			var RotationLocked = false
 			var Mode2D = Mode2DStates.InheritFromSpace
 		}
+		MultiConvexMeshCollider 
+		{
+			var Ghost = false
+			var SendsEvents = true
+			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
+			var CollisionGroup = "4e740859314e5515:DefaultGroup"
+			var Offset = Real3{0, 0, 0}
+			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
+		}
+		QuickHullRenderer 
+		{
+			var Active = true
+		}
+		VHacdHelper 
+		{
+			var Mode = VHacdMode.Zero
+			var BuildPhysics = true
+		}
+		ZeroVHacd 
+		{
+			var Fidelity = 0.75
+			var MaxRecusionDepth = 20
+			var MaxHulls = 100
+			var AllowedConcavityVolumeError = 0.00100000005
+			var ResampleMesh = false
+			var AllowedVolumeSurfaceAreaRatio = 0
+			var BalanceWeight = 0.0500000007
+			var SymmetryWeight = 0.0500000007
+		}
 	}
-	Cog [ContextId:8]
+	Cog [ContextId:7]
 	{
-		var Name = "Hacd"
+		var Name = "OrigVHacd"
 		Transform 
 		{
-			var Translation = Real3{10.3431749, 0, 0}
+			var Translation = Real3{15.9964132, -1.14848804, 0}
 			var Scale = Real3{1, 1, 1}
 			var Rotation = Quaternion{0, 0, 0, 1}
 		}
 		Model 
 		{
 			var Visible = true
-			var ViewCulling = true
+			var ViewCulling = false
 			var VisibilityEvents = true
 			var OverrideBoundingBox = false
 			var LocalAabbCenter = Real3{0, 0, 0}
 			var LocalAabbHalfExtents = Real3{1, 1, 1}
 			var GroupSortValue = 0
 			var Material = "5a9acdd308c66f53:SolidWireFrame"
-			var Mesh = "5a9a1fe39e3e9342:hornbug"
-		}
-		MultiConvexMeshCollider 
-		{
-			var Ghost = false
-			var SendsEvents = true
-			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
-			var CollisionGroup = "4e740859314e5515:DefaultGroup"
-			var Offset = Real3{0, 0, 0}
-			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
-		}
-		HacdScript 
-		{
-			var Active = true
-			var AutoDebugDraw = false
-			var DrawTriangles = false
-			var DrawEdges = false
-			var DrawWireFrame = true
-		}
-		QuickHullRenderer 
-		{
-			var Active = true
+			var Mesh = "5a8e2b78289f61d1:ZeroDragon_polySurface56GeneratedMeshNode1"
 		}
 		RigidBody 
 		{
@@ -476,20 +421,23 @@ Level
 			var RotationLocked = false
 			var Mode2D = Mode2DStates.InheritFromSpace
 		}
-		HacdPlugin 
+		MultiConvexMeshCollider 
 		{
-			var Concavity = 0.00999999978
-			var Alpha = 0.0500000007
-			var Beta = 0.0500000007
-			var Resolution = 5000
-			var Mode = 0
-			var ConvexHullApproximation = true
-			var ConvexHullDownSamping = 4
-			var PlaneDownSampling = 4
-			var MinVolumePerCH = 9.99999975e-05
-			var MaxVerticesPerCH = 64
-			var MaxConvexHulls = 1024
-			var ProjectHullVertices = false
+			var Ghost = false
+			var SendsEvents = true
+			var Material = "4de020863e872da8:DefaultPhysicsMaterial"
+			var CollisionGroup = "4e740859314e5515:DefaultGroup"
+			var Offset = Real3{0, 0, 0}
+			var Mesh = "5473d23257f172d0:DefaultMultiConvexMesh"
+		}
+		QuickHullRenderer 
+		{
+			var Active = true
+		}
+		VHacdHelper 
+		{
+			var Mode = VHacdMode.Orig
+			var BuildPhysics = true
 		}
 		VHacd_Orig 
 		{

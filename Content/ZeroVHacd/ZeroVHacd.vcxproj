@@ -144,6 +144,7 @@ EXIT 0
     <ClInclude Include="QuickHull.hpp" />
     <ClInclude Include="QuickHull3D.hpp" />
     <ClInclude Include="Shapes.hpp" />
+    <ClInclude Include="StringBuilder.hpp" />
     <ClInclude Include="TriangleMesh.hpp" />
     <ClInclude Include="VHacd.hpp" />
     <ClInclude Include="VHacd_Orig.hpp" />

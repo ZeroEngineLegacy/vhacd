@@ -1,0 +1,173 @@
+enum VHacdMode{Zero, Orig}
+
+class VHacdHelper : ZilchComponent
+{
+  [Property] var Mode : VHacdMode = VHacdMode.Zero;
+  [Property] var BuildPhysics : Boolean = true;
+  
+  [Dependency] var Model : Model;
+  var OriginalModel : Cog = null;
+  var PhysicsMesh : MultiConvexMesh = MultiConvexMesh.CreateRuntime();
+  
+  function Initialize(init : CogInitializer)
+  {
+    Zero.Connect(this.Owner, "Run", this.OnRun);
+    Zero.Connect(this.Owner, "Finished", this.OnFinished);
+    Zero.Connect(this.Owner, "Cancel", this.OnCancel);
+  }
+
+  function OnRun(event : Event)
+  {
+    this.Run();
+  }
+  
+  function OnCancel(event : Event)
+  {
+    this.Cancel();
+  }
+  
+  function Run()
+  {
+    timeout(1000)
+    {
+      var child = this.Space.CreateAtPosition(Archetype.Model, this.Owner.Transform.WorldTranslation);
+      child.AttachTo(this.Owner);
+      
+      child.Model.Mesh = this.Model.Mesh;
+      child.Model.Visible = false;
+      this.OriginalModel = child;
+      
+      if(this.Mode == VHacdMode.Zero)
+        this.RunZeroVHacd();
+      else
+        this.RunOrigVHacd();
+    }
+  }
+  
+  function Cancel()
+  {
+    if(this.Mode == VHacdMode.Zero)
+      this.CancelZeroVHacd();
+    else
+      this.CancelOrigVHacd();
+  }
+
+  function OnFinished(event : Event)
+  {
+    timeout(1000)
+    {
+      if(this.Mode == VHacdMode.Zero)
+        this.ZeroVHacdFinished();
+      else
+        this.OrigVHacdFinished();
+        
+      if(this.BuildPhysics && this.Owner.MultiConvexMeshCollider != null)
+        this.Owner.MultiConvexMeshCollider.Mesh = this.PhysicsMesh;
+    }
+  }
+  
+  function RunZeroVHacd()
+  {
+    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+    if(zeroVhacd != null)
+      zeroVhacd.Compute(this.Model.Mesh);
+  }
+  
+  function RunOrigVHacd()
+  {
+    var origVhacd = this.Owner.GetComponentByName("VHacd_Orig") as VHacd_Orig;
+    if(origVhacd != null)
+      origVhacd.Compute(this.Model.Mesh);
+  }
+  
+  function ZeroVHacdFinished()
+  {
+    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+    if(zeroVhacd == null)
+      return;
+    
+    this.PhysicsMesh.SubMeshes.Clear();
+    this.Owner.QuickHullRenderer.Clear();
+    for(var i = 0; i < zeroVhacd.GetHullCount(); ++i)
+    {
+      var hull = zeroVhacd.GetHull(i);
+      this.AddHull(hull);
+    }
+  }
+  
+  function OrigVHacdFinished()
+  {
+    var origVhacd = this.Owner.GetComponentByName("VHacd_Orig") as VHacd_Orig;
+    if(origVhacd == null)
+      return;
+    
+    this.PhysicsMesh.SubMeshes.Clear();
+    this.Owner.QuickHullRenderer.Clear();
+    for(var i = 0; i < origVhacd.GetHullCount(); ++i)
+    {
+      var hull = origVhacd.GetHull(i);
+      this.AddHull(hull);
+    }
+  }
+  
+  function AddHull(hull : QuickHull3D)
+  {
+    var child = this.Space.Create(Archetype.QuickHullRenderer);
+    child.AttachTo(this.Owner);
+    child.Transform.Translation = Real3();
+  
+    child.QuickHullRenderer.Clear();
+    child.QuickHullRenderer.Add(hull);
+    
+    if(this.BuildPhysics)
+    {
+      var startOffset = this.PhysicsMesh.Vertices.Count;
+      foreach(var point in hull.Mesh.Vertices)
+        this.PhysicsMesh.Vertices.Add(point);
+      
+      var subMesh = this.PhysicsMesh.SubMeshes.Add();
+      foreach(var face in hull.Mesh.Faces)
+      {
+        for(var i = 2; i < face.Edges.Count; ++i)
+        {
+          var e0 = hull.Mesh.Edges[face.Edges[0]];
+          var e1 = hull.Mesh.Edges[face.Edges[i - 1]];
+          var e2 = hull.Mesh.Edges[face.Edges[i]];
+          
+          var i0 = e0.VertexIndex + startOffset;
+          var i1 = e1.VertexIndex + startOffset;
+          var i2 = e2.VertexIndex + startOffset;
+          
+          subMesh.Indices{i0, i1, i2};
+        }
+      }
+    }
+  }
+  
+  function CancelZeroVHacd()
+  {
+    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+    if(zeroVhacd != null)
+      zeroVhacd.Cancel();
+  }
+  
+  function CancelOrigVHacd()
+  {
+    var origVhacd = this.Owner.GetComponentByName("VHacd_Orig") as VHacd_Orig;
+    if(origVhacd != null)
+      origVhacd.Cancel();
+  }
+  
+  function Compute()
+  {
+    var child = this.Space.CreateAtPosition(Archetype.Model, this.Owner.Transform.WorldTranslation);
+    child.AttachTo(this.Owner);
+    
+    child.Model.Mesh = this.Model.Mesh;
+    child.Model.Visible = false;
+    this.OriginalModel = child;
+    
+    var zeroVhacd = this.Owner.GetComponentByName("ZeroVHacd") as ZeroVHacd;
+    zeroVhacd.Compute(this.Model.Mesh);
+  }
+}

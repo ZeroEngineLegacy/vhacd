@@ -44,9 +44,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{397.880615, -198.350952, 20.0000286}
+			var Translation = Real3{230, -373, 10}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{0, -1.09278471e-08, 0, 1}
+			var Rotation = Quaternion{0, 0, 0, 1}
 		}
 		CameraViewport 
 		{
@@ -97,7 +97,7 @@ Level
 			var FarPlane = 100
 			var PerspectiveMode = PerspectiveMode.Orthographic
 			var FieldOfView = 45
-			var Size = 3508
+			var Size = 736
 		}
 		EditorCameraController 
 		{
@@ -106,7 +106,7 @@ Level
 			var LookDistance = 20
 			var VerticalAngle = 0
 			var HorizontalAngle = 0
-			var LookTarget = Real3{397.880615, -198.350952, 2.79026099e-05}
+			var LookTarget = Real3{230.0448, -372.058136, 7.19248374e-06}
 			var MoveSensitivity = 1
 		}
 	}
@@ -271,7 +271,7 @@ Level
 		}
 		Hierarchy 
 		{
-			Cog [Id:0x5a71d2e02ec8e8fc][ContextId:5]
+			Cog [Id:0x5ae3e538d605273f][ContextId:5]
 			{
 				var Name = "Sprite"
 				Transform 
@@ -301,7 +301,7 @@ Level
 				}
 				Area 
 				{
-					var Size = Real2{490, 445}
+					var Size = Real2{490, 444}
 					var Origin = Location.TopLeft
 				}
 				UiWidget 
@@ -368,12 +368,12 @@ Level
 				{
 				}
 			}
-			Cog [Id:0x5ae601384de80f0d][ContextId:6]
+			Cog [Id:0x5ae3e456369a0b4c][ContextId:6]
 			{
-				var Name = "ProgessArea"
+				var Name = "ProgressGroup"
 				Transform 
 				{
-					var Translation = Real3{5, -455, 0}
+					var Translation = Real3{5, -454, 0}
 					var Scale = Real3{1, 1, 1}
 					var Rotation = Quaternion{0, 0, 0, 1}
 				}
@@ -387,7 +387,7 @@ Level
 					var LocalAabbHalfExtents = Real3{1, 1, 1}
 					var GroupSortValue = 0
 					var Material = "582c575af53d18c9:AlphaSprite"
-					var VertexColor = Real4{0.310000002, 0.310000002, 0.310000002, 1}
+					var VertexColor = Real4{0.258823544, 0.258823544, 0.258823544, 1}
 					var GeometryMode = SpriteGeometryMode.ZPlane
 					var SpriteSource = "5275aa4d802dd6dc:Square"
 					var FlipX = false
@@ -398,7 +398,7 @@ Level
 				}
 				Area 
 				{
-					var Size = Real2{490, 40}
+					var Size = Real2{490, 41}
 					var Origin = Location.TopLeft
 				}
 				UiWidget 
@@ -410,7 +410,7 @@ Level
 					var OnTop = false
 					var ClipChildren = false
 					var CanTakeFocus = false
-					var LocalColor = Real4{0.310000002, 0.310000002, 0.310000002, 1}
+					var LocalColor = Real4{0.258823544, 0.258823544, 0.258823544, 1}
 					var HierarchyColor = Real4{1, 1, 1, 1}
 					var SizePolicyX = UiSizePolicy.Flex
 					var SizePolicyY = UiSizePolicy.Auto
@@ -430,56 +430,51 @@ Level
 					var PaddingTop = 0
 					var PaddingRight = 0
 					var PaddingBottom = 0
-					var StackDirection = UiStackLayoutDirection.TopToBottom
+					var StackDirection = UiStackLayoutDirection.LeftToRight
 					var Spacing = Real2{0, 0}
-				}
-				ProgessListener 
-				{
-					var TextPath = CogPath
-					{
-						var Path = "Text"
-						var ErrorOnResolveToNull = false
-						var ErrorOnPathCantCompute = false
-						var ErrorOnDirectLinkFail = false
-						var UpdateCogOnPathChange = true
-						var UpdatePathOnCogChange = true
-						var UpdateCogOnInitialize = true
-						var ResolvedNullErrorOccurred = false
-						var Cog = 7
-						var PathPreference0 = CogPathPreference.CogRelative
-						var PathPreference1 = CogPathPreference.SpaceRelative
-						var PathPreference2 = CogPathPreference.Absolute
-					}
-					var ProgressPath = CogPath
-					{
-						var Path = "ProgressBar"
-						var ErrorOnResolveToNull = false
-						var ErrorOnPathCantCompute = false
-						var ErrorOnDirectLinkFail = false
-						var UpdateCogOnPathChange = true
-						var UpdatePathOnCogChange = true
-						var UpdateCogOnInitialize = true
-						var ResolvedNullErrorOccurred = false
-						var Cog = 8
-						var PathPreference0 = CogPathPreference.CogRelative
-						var PathPreference1 = CogPathPreference.SpaceRelative
-						var PathPreference2 = CogPathPreference.Absolute
-					}
 				}
 				Hierarchy 
 				{
-					Cog [Id:0x5ae601eebbd4c193][ContextId:7]
+					Cog [Id:0x5ae3ac5d41014775][InheritId:"5ae3ac5d4100785a:UiVHacdProgressArea"][ContextId:7]
 					{
-						var Name = "Text"
 						Transform 
 						{
 							var Translation = Real3{0, 0, 0}
+							var Rotation = Quaternion{0, 0, 0, 1}
+							var Scale = Real3{1, 1, 1}
+						}
+					}
+					Cog [Id:0x5ae3bb0ad5cd607a][ContextId:8]
+					{
+						var Name = "Spacer"
+						Transform 
+						{
+							var Translation = Real3{244, 0, 0}
 							var Scale = Real3{1, 1, 1}
 							var Rotation = Quaternion{0, 0, 0, 1}
 						}
+						Sprite 
+						{
+							var Visible = true
+							var ViewCulling = true
+							var VisibilityEvents = true
+							var OverrideBoundingBox = false
+							var LocalAabbCenter = Real3{0, 0, 0}
+							var LocalAabbHalfExtents = Real3{1, 1, 1}
+							var GroupSortValue = 0
+							var Material = "582c575af53d18c9:AlphaSprite"
+							var VertexColor = Real4{0.180392161, 0.180392161, 0.180392161, 1}
+							var GeometryMode = SpriteGeometryMode.ZPlane
+							var SpriteSource = "5275aa4d802dd6dc:Square"
+							var FlipX = false
+							var FlipY = false
+							var AnimationActive = true
+							var AnimationSpeed = 1
+							var StartFrame = 0
+						}
 						Area 
 						{
-							var Size = Real2{490, 20}
+							var Size = Real2{2, 41}
 							var Origin = Location.TopLeft
 						}
 						UiWidget 
@@ -491,11 +486,11 @@ Level
 							var OnTop = false
 							var ClipChildren = false
 							var CanTakeFocus = false
-							var LocalColor = Real4{1, 1, 1, 1}
+							var LocalColor = Real4{0.180392161, 0.180392161, 0.180392161, 1}
 							var HierarchyColor = Real4{1, 1, 1, 1}
-							var SizePolicyX = UiSizePolicy.Flex
-							var SizePolicyY = UiSizePolicy.Fixed
-							var FlexSize = Real2{1, 1}
+							var SizePolicyX = UiSizePolicy.Fixed
+							var SizePolicyY = UiSizePolicy.Flex
+							var FlexSize = Real2{2, 1}
 							var AbsoluteMinSize = Real2{1, 1}
 							var VerticalAlignment = UiVerticalAlignment.Top
 							var HorizontalAlignment = UiHorizontalAlignment.Left
@@ -505,42 +500,24 @@ Level
 							var MarginBottom = 0
 							var DockMode = UiDockMode.Left
 						}
-						SpriteText 
-						{
-							var Visible = true
-							var ViewCulling = true
-							var VisibilityEvents = true
-							var OverrideBoundingBox = false
-							var LocalAabbCenter = Real3{0, 0, 0}
-							var LocalAabbHalfExtents = Real3{1, 1, 1}
-							var GroupSortValue = 0
-							var Material = "582c575af53d18c9:AlphaSprite"
-							var VertexColor = Real4{1, 1, 1, 1}
-							var GeometryMode = SpriteGeometryMode.ZPlane
-							var Text = "Text"
-							var Font = "57343753bb4eaaec:NotoSans-Regular"
-							var FontSize = 10
-							var PixelsPerUnit = 1
-							var TextAlign = TextAlign.Center
-						}
 						Hierarchy 
 						{
 						}
 					}
-					Cog [Id:0x5ae601c040674a3d][InheritId:"5aecfaea64b27070:UiProgressBar"][ContextId:8]
+					Cog [Id:0x5ae3ac56476f0a4c][InheritId:"5ae3ac5d4100785a:UiVHacdProgressArea"][ContextId:9]
 					{
 						Transform 
 						{
-							var Translation = Real3{0, -20, 0}
+							var Translation = Real3{251, 0, 0}
 							var Rotation = Quaternion{0, 0, 0, 1}
 							var Scale = Real3{1, 1, 1}
 						}
-						UiStackLayout 
+						ProgessListener 
 						{
-							var PaddingLeft = 0
-							var PaddingTop = 2
-							var PaddingRight = 0
-							var PaddingBottom = 0
+							var ProgressListenerTarget = CogPath
+							{
+								var Path = "GameLevel:/OrigVHacd"
+							}
 						}
 					}
 				}

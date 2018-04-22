@@ -28,7 +28,9 @@ public:
   ZilchDeclareType(Zilch::TypeCopyMode::ReferenceType);
 
   BackgroundTask* mTask;
-  float mPercentage;
-  bool mFinished;
-  String mProgressText;
+  
+  float mTotalPercentage;
+  float mStepPercentage;
+  String mStepName;
+  String mStepMessage;
 };

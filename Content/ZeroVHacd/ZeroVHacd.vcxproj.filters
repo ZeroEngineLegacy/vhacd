@@ -93,6 +93,9 @@
     <ClInclude Include="VHacd_Orig.hpp">
       <Filter>Plugin</Filter>
     </ClInclude>
+    <ClInclude Include="StringBuilder.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Zero">

@@ -9,8 +9,11 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindMethod(Initialize);
 
   ZilchBindMethod(Compute);
+  ZilchBindMethod(Cancel);
+  ZilchBindMethod(Clear);
   ZilchBindMethod(GetHullCount);
   ZilchBindMethod(GetHull);
+
   ZilchBindMethod(OnJobProgress);
   ZilchBindMethod(OnJobFinished);
 
@@ -26,6 +29,7 @@ ZilchDefineType(ZeroVHacd, builder, type)
 
 ZeroVHacd::ZeroVHacd()
 {
+  mTask = nullptr;
   mFidelity = 0.75f;
   mSubDivisions = Integer3(50, 50, 50);
   mMaxRecusionDepth = 6;
@@ -61,6 +65,7 @@ void ZeroVHacd::OnJobFinished(DownloadJobEvent* event)
 
   Zilch::HandleOf<ZeroEngine::ZilchEvent> toSend = ZilchAllocate(ZeroEngine::ZilchEvent);
   GetOwner()->DispatchEvent("Finished", toSend);
+  mTask = nullptr;
 }
 
 void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
@@ -69,20 +74,29 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
 
   Mesh* mesh = meshHandle;
   
-  VHacdTask* task = new VHacdTask();
-  task->mZeroVHacd = this;
-  task->mOwner = GetOwner();
+  mTask = new VHacdTask();
+  mTask->mZeroVHacd = this;
+  mTask->mOwner = GetOwner();
 
-  task->mVHacd.mMaxHulls = mMaxHulls;
-  task->mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
-  task->mVHacd.mResampleMesh = mResampleMesh;
-  task->mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
-  task->mVHacd.mBalanceWeight = mBalanceWeight;
-  task->mVHacd.mSymmetryWeight = mSymmetryWeight;
+  mTask->mVHacd.mMaxHulls = mMaxHulls;
+  mTask->mVHacd.mAllowedConcavityVolumeError = mAllowedConcavityVolumeError;
+  mTask->mVHacd.mResampleMesh = mResampleMesh;
+  mTask->mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
+  mTask->mVHacd.mBalanceWeight = mBalanceWeight;
+  mTask->mVHacd.mSymmetryWeight = mSymmetryWeight;
 
-  task->mMesh.Create(mesh);
+  mTask->mMesh.Create(mesh);
 
-  JobSystem::GetInstance()->AddJob(task);
+  JobSystem::GetInstance()->AddJob(mTask);
+}
+
+void ZeroVHacd::Cancel()
+{
+  if(mTask != nullptr)
+  {
+    mTask->Cancel();
+    mTask = nullptr;
+  }
 }
 
 void ZeroVHacd::Clear()
@@ -121,13 +135,13 @@ void VHacdTask::Run()
   Finished();
 }
 
-void VHacdTask::MarkForShutdown()
+void VHacdTask::Cancel()
 {
   mVHacd.mForceStop = true;
 }
 
-void VHacdTask::ProgressCallback(const String& message, float percentage, void* clientData)
+void VHacdTask::ProgressCallback(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage, void* clientData)
 {
   VHacdTask* self = (VHacdTask*)clientData;
-  self->UpdateProgress(percentage, message);
+  self->UpdateProgress(totalPercent, stepName, stepPercent, stepMessage);
 }

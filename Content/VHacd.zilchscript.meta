@@ -1,9 +1,0 @@
-[Version:1]
-TextContent 
-{
-	ZilchScriptBuilder 
-	{
-		var Name = "VHacd"
-		var ResourceId = 0x5affb34970629c30
-	}
-}

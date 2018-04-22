@@ -4,16 +4,16 @@ class Job
 {
 public:
   virtual void Run() {};
-  virtual void MarkForShutdown() {};
+  virtual void Cancel() {};
 };
 
 class BackgroundTask : public Job
 {
 public:
 
-  void UpdateProgress(float percentage);
-  void UpdateProgress(float percentage, Zilch::StringParam message);
-  void UpdateProgress(float percentage, Zilch::StringParam message, const String& eventName);
+  void UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage);
+  void UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage, const String& eventName);
+
   void Finished();
   ZeroEngine::Cog* mOwner;
 };
@@ -22,8 +22,11 @@ public:
 class ProgressEvent
 {
 public:
-  String mMessage;
-  float mPercentage;
+  float mTotalPercentage;
+  float mStepPercentage;
+  String mStepName;
+  String mStepMessage;
+
   String mEventName;
   BackgroundTask* mTask;
   ZeroEngine::Cog* mOwner;

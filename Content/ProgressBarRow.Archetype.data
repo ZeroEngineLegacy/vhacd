@@ -1,0 +1,163 @@
+[Version:1]
+Cog 
+{
+	var Name = "Row1"
+	Transform 
+	{
+		var Translation = Real3{0, 0, 0}
+		var Scale = Real3{1, 1, 1}
+		var Rotation = Quaternion{0, 0, 0, 1}
+	}
+	Area 
+	{
+		var Size = Real2{202, 20}
+		var Origin = Location.TopLeft
+	}
+	UiWidget 
+	{
+		var Active = true
+		var Visible = true
+		var Interactive = true
+		var InLayout = true
+		var OnTop = false
+		var ClipChildren = false
+		var CanTakeFocus = false
+		var LocalColor = Real4{0.454901993, 0.454901993, 0.454901993, 1}
+		var HierarchyColor = Real4{1, 1, 1, 1}
+		var SizePolicyX = UiSizePolicy.Flex
+		var SizePolicyY = UiSizePolicy.Auto
+		var FlexSize = Real2{1, 1}
+		var AbsoluteMinSize = Real2{1, 1}
+		var VerticalAlignment = UiVerticalAlignment.Top
+		var HorizontalAlignment = UiHorizontalAlignment.Left
+		var MarginLeft = 0
+		var MarginTop = 0
+		var MarginRight = 0
+		var MarginBottom = 0
+		var DockMode = UiDockMode.Left
+	}
+	UiStackLayout 
+	{
+		var PaddingLeft = 0
+		var PaddingTop = 0
+		var PaddingRight = 0
+		var PaddingBottom = 0
+		var StackDirection = UiStackLayoutDirection.LeftToRight
+		var Spacing = Real2{0, 0}
+	}
+	Sprite 
+	{
+		var Visible = true
+		var ViewCulling = true
+		var VisibilityEvents = true
+		var OverrideBoundingBox = false
+		var LocalAabbCenter = Real3{0, 0, 0}
+		var LocalAabbHalfExtents = Real3{1, 1, 1}
+		var GroupSortValue = 0
+		var Material = "582c575af53d18c9:AlphaSprite"
+		var VertexColor = Real4{0.454901993, 0.454901993, 0.454901993, 1}
+		var GeometryMode = SpriteGeometryMode.ZPlane
+		var SpriteSource = "5586f579ca73ecc2:SquareBordered"
+		var FlipX = false
+		var FlipY = false
+		var AnimationActive = true
+		var AnimationSpeed = 1
+		var StartFrame = 0
+	}
+	Hierarchy 
+	{
+		Cog [Id:0x5ae3abc9c4f9f3bc][InheritId:"5ae3ab31c6892e11:TextButton"]
+		{
+			var Name = "StageText"
+			Transform 
+			{
+				var Translation = Real3{0, 0, 0}
+				var Rotation = Quaternion{0, 0, 0, 1}
+				var Scale = Real3{1, 1, 1}
+			}
+			Area 
+			{
+				var Size = Real2{40, 20}
+			}
+			UiWidget 
+			{
+				var Size = Real2{40, 20}
+				var LocalColor = Real4{0.309803933, 0.309803933, 0.309803933, 1}
+				var SizePolicyX = UiSizePolicy.Flex
+				var FlexSize = Real2{0.25, 1}
+			}
+			Hierarchy 
+			{
+				Cog [Id:0x5ae3a805fd5cf9b7]
+				{
+					UiWidget 
+					{
+						var LocalColor = Real4{0.309803933, 0.309803933, 0.309803933, 1}
+					}
+					Hierarchy 
+					{
+						Cog [Id:0x5ae3a829f297c1d7]
+						{
+							SpriteText 
+							{
+								var Text = "StageText"
+							}
+							UiHighlight [LocallyRemoved]
+							{
+							}
+						}
+					}
+					UiHighlight [LocallyRemoved]
+					{
+					}
+				}
+			}
+			UiHighlight [LocallyRemoved]
+			{
+			}
+		}
+		Cog [Id:0x5ae3fb5ec1aaa878][InheritId:"5aecfaea64b27070:UiProgressBar"]
+		{
+			Transform 
+			{
+				var Translation = Real3{40, 0, 0}
+				var Rotation = Quaternion{0, 0, 0, 1}
+				var Scale = Real3{1, 1, 1}
+			}
+			UiWidget 
+			{
+				var LocalColor = Real4{0.180392161, 0.180392161, 0.180392161, 1}
+			}
+			UiStackLayout 
+			{
+				var PaddingLeft = 1
+				var PaddingTop = 1
+				var PaddingRight = 1
+				var PaddingBottom = 1
+			}
+			UiProgressBar 
+			{
+				var Percentage = 0.100000001
+			}
+			Hierarchy 
+			{
+				Cog [Id:0x5aecfab054b34306]
+				{
+					UiWidget 
+					{
+						var MarginTop = 0
+						var MarginBottom = 0
+					}
+				}
+				Cog [Id:0x5aecfd30bcba11ee]
+				{
+					UiWidget 
+					{
+						var MarginTop = 0
+						var MarginBottom = 0
+					}
+				}
+			}
+		}
+	}
+}

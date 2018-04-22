@@ -10,9 +10,11 @@ ZilchDefineType(VHacd_Orig, builder, type)
 
   // Note: All event connection methods must be bound
   ZilchBindMethod(Compute);
+  ZilchBindMethod(Cancel);
   ZilchBindMethod(Clear);
   ZilchBindMethod(GetHullCount);
   ZilchBindMethod(GetHull);
+
   ZilchBindMethod(OnJobFinished);
 
   ZilchBindFieldProperty(mConcavity);
@@ -31,6 +33,7 @@ ZilchDefineType(VHacd_Orig, builder, type)
 
 VHacd_Orig::VHacd_Orig()
 {
+  mTask = nullptr;
   VHACD::IVHACD::Parameters params;
 
   mConcavity = (float)params.m_concavity;
@@ -58,35 +61,13 @@ void VHacd_Orig::Initialize(ZeroEngine::CogInitializer* initializer)
 
 void VHacd_Orig::Compute(Zilch::HandleOf<Mesh>& meshHandle)
 {
-  VHacd_OrigTask* task = new VHacd_OrigTask();
-  task->mTaskOwner = this;
-  task->mOwner = GetOwner();
+  mTask = new VHacd_OrigTask();
+  mTask->mTaskOwner = this;
+  mTask->mOwner = GetOwner();
 
-  GraphicsMeshToMeshData(meshHandle, task->mVertices, task->mIndices);
+  GraphicsMeshToMeshData(meshHandle, mTask->mVertices, mTask->mIndices);
 
-  JobSystem::GetInstance()->AddJob(task);
-/*
-  VHACD::IVHACD* hacd = VHACD::CreateVHACD();
-  VHACD::IVHACD::Parameters params;
-
-  params.m_mode = mMode;
-  params.m_concavity = mConcavity;
-  params.m_alpha = mAlpha;
-  params.m_beta = mBeta;
-  params.m_resolution = mResolution;
-  params.m_convexhullApproximation = mConvexHullApproximation;
-  params.m_convexhullDownsampling = mConvexHullDownSamping;
-  params.m_planeDownsampling = mPlaneDownSampling;
-  params.m_minVolumePerCH = mMinVolumePerCH;
-  params.m_maxNumVerticesPerCH = mMaxVerticesPerCH;
-  params.m_maxConvexHulls = mMaxConvexHulls;
-  params.m_projectHullVertices = mProjectHullVertices;
-
-  int vertexCount = vertices.Size() / 3;
-  int triangleCount = indices.Size() / 3;
-  hacd->Compute(vertices.Data(), vertexCount, indices.Data(), triangleCount, params);*/
-
-  //OnFinished(hacd);
+  JobSystem::GetInstance()->AddJob(mTask);
 }
 
 void VHacd_Orig::OnJobFinished(DownloadJobEvent* event)
@@ -117,6 +98,7 @@ void VHacd_Orig::OnJobFinished(DownloadJobEvent* event)
 
   Zilch::HandleOf<ZeroEngine::ZilchEvent> toSend = ZilchAllocate(ZeroEngine::ZilchEvent);
   GetOwner()->DispatchEvent("Finished", toSend);
+  mTask = nullptr;
 }
 
 void VHacd_Orig::GraphicsMeshToMeshData(Mesh* mesh, Array<float>& vertices, Array<uint32_t>& indices)
@@ -139,6 +121,15 @@ void VHacd_Orig::GraphicsMeshToMeshData(Mesh* mesh, Array<float>& vertices, Arra
   {
     int index = indexBuffer->Get(i);
     indices.PushBack(index);
+  }
+}
+
+void VHacd_Orig::Cancel()
+{
+  if (mTask != nullptr)
+  {
+    mTask->Cancel();
+    mTask = nullptr;
   }
 }
 
@@ -176,8 +167,9 @@ public:
     const char* const stage,
     const char* const operation) override
   {
-    float percentage = (float)stageProgress / 100.0f;
-    mTask->UpdateProgress(percentage, stage);
+    float totalPercentage = (float)overallProgress / 100.0f;
+    float stepPercentage = (float)stageProgress / 100.0f;
+    mTask->UpdateProgress(totalPercentage, stage, stepPercentage, operation);
   }
 
   VHacd_OrigTask* mTask;
@@ -216,15 +208,11 @@ void VHacd_OrigTask::Run()
   Finished();
 }
 
-void VHacd_OrigTask::MarkForShutdown()
+void VHacd_OrigTask::Cancel()
 {
   mVHacd->Cancel();
-  //mVHacd.mForceStop = true;
 }
 
 void VHacd_OrigTask::ProgressCallback(const String& message, float percentage, void* clientData)
 {
-  
-  //VHacdTask* self = (VHacdTask*)clientData;
-  //self->UpdateProgress(percentage, message);
 }

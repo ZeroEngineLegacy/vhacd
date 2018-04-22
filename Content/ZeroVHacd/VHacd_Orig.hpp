@@ -5,6 +5,8 @@ namespace VHACD
   class IVHACD;
 }
 
+class VHacd_OrigTask;
+
 class VHacd_Orig : public ZeroEngine::ZilchComponent
 {
 public:
@@ -17,6 +19,7 @@ public:
   void GraphicsMeshToMeshData(Mesh* mesh, Array<float>& vertices, Array<uint32_t>& indices);
 
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
+  void Cancel();
   void OnJobFinished(DownloadJobEvent* event);
 
   void Clear();
@@ -37,6 +40,7 @@ public:
   int mMaxConvexHulls;
   bool mProjectHullVertices;
 
+  VHacd_OrigTask* mTask;
   Zero::Array<Zilch::HandleOf<ZeroEngine::QuickHull3D> > mHulls;
 };
 
@@ -46,7 +50,7 @@ class VHacd_OrigTask : public BackgroundTask
 public:
   VHacd_OrigTask();
   void Run() override;
-  void MarkForShutdown() override;
+  void Cancel() override;
 
   static void ProgressCallback(const String& message, float percentage, void* clientData);
 

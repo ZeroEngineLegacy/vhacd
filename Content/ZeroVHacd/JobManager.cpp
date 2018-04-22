@@ -61,9 +61,11 @@ void JobManager::OnLogicUpdate(ZeroEngine::UpdateEvent* event)
     if (pEvent->mOwner != nullptr)
     {
       Zilch::HandleOf<DownloadJobEvent> toSend = ZilchAllocate(DownloadJobEvent);
-      toSend->mPercentage = pEvent->mPercentage;
-      toSend->mProgressText = pEvent->mMessage;
       toSend->mTask = pEvent->mTask;
+      toSend->mTotalPercentage = pEvent->mTotalPercentage;
+      toSend->mStepPercentage = pEvent->mStepPercentage;
+      toSend->mStepName = pEvent->mStepName;
+      toSend->mStepMessage = pEvent->mStepMessage;
       pEvent->mOwner->DispatchEvent(pEvent->mEventName, toSend);
     }
 
@@ -88,7 +90,8 @@ ZilchDefineType(DownloadJobEvent, builder, type)
   ZilchBindDestructor();
   ZilchBindConstructor();
 
-  ZilchBindFieldProperty(mPercentage);
-  ZilchBindFieldProperty(mProgressText);
-  ZilchBindFieldProperty(mFinished);
+  ZilchBindFieldProperty(mTotalPercentage);
+  ZilchBindFieldProperty(mStepPercentage);
+  ZilchBindFieldProperty(mStepName);
+  ZilchBindFieldProperty(mStepMessage);
 }

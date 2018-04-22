@@ -1,0 +1,17 @@
+class UiText : ZilchComponent
+{
+  [Property] var TextPath : CogPath = CogPath();
+  
+  var Text : String
+  {
+    get { return this.TextPath.SpriteText.Text; }
+    set { this.TextPath.SpriteText.Text = value; }
+  }
+  
+  function Initialize(init : CogInitializer)
+  {
+    //Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+  }
+
+  
+}

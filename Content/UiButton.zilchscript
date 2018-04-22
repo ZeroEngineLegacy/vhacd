@@ -1,0 +1,14 @@
+class UiButton : ZilchComponent
+{
+  sends ButtonClicked : Event;
+  
+  function Initialize(init : CogInitializer)
+  {
+    Zero.Connect(this.Owner, Events.MouseUp, this.OnMouseUp);
+  }
+
+  function OnMouseUp(event : ViewportMouseEvent)
+  {
+    this.Owner.DispatchEvent(Events.ButtonClicked, ZilchEvent());
+  }
+}

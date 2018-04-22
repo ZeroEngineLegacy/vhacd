@@ -7,6 +7,8 @@ class DownloadJobEvent;
 // For more information on binding and using Zilch APIs, visit: http://zilch.digipen.edu/
 // For auto binding specifically, visit: http://zilch.digipen.edu/home/AutomaticBinding.html
 
+class VHacdTask;
+
 // An example component being bound to the engine
 class ZeroVHacd : public ZeroEngine::ZilchComponent
 {
@@ -20,6 +22,7 @@ public:
   void OnJobFinished(DownloadJobEvent* event);
   
   void Compute(Zilch::HandleOf<Mesh>& meshHandle);
+  void Cancel();
   void Clear();
 
   Real GetFidelity();
@@ -40,15 +43,16 @@ public:
   Real mSymmetryWeight;
 
   Zero::Array<Zilch::HandleOf<ZeroEngine::QuickHull3D> > mHulls;
+  VHacdTask* mTask;
 };
 
 class VHacdTask : public BackgroundTask
 {
 public:
   void Run() override;
-  void MarkForShutdown() override;
+  void Cancel() override;
 
-  static void ProgressCallback(const String& message, float percentage, void* clientData);
+  static void ProgressCallback(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage, void* clientData);
 
   ZeroVHacd* mZeroVHacd;
   TriangleMesh mMesh;

@@ -12,6 +12,8 @@ VHacd::VHacd()
   mCallbackFn = nullptr;
   mClientData = nullptr;
   mForceStop = false;
+  mTotalPercent = 0;
+  mStepPercent = 0;
 
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
@@ -28,7 +30,9 @@ void VHacd::SetProgressCallback(CallbackFn callbackFn, void* clientData)
 
 void VHacd::Compute(Real fidelity, int recursions, TriangleMesh& mesh)
 {
-  mProgress = 0;
+  mStepPercent = 0;
+  mTotalPercent = 0;
+
   mFidelity = fidelity;
   mMaxRecusionDepth = recursions;
 
@@ -36,6 +40,9 @@ void VHacd::Compute(Real fidelity, int recursions, TriangleMesh& mesh)
   ComputeApproximateConvexDecomposition();
   MergeHulls();
   Resample();
+
+  if (mForceStop)
+    Clear();
 }
 
 void VHacd::Clear()
@@ -108,8 +115,7 @@ void VHacd::Initialize(TriangleMesh& mesh)
 
   ComputeSubDivisions(aabb);
 
-  
-  UpdateProgress("Creating Voxel Grid", mProgress);
+  UpdateProgress(mTotalPercent, "Voxelizing", mStepPercent, String());
 
   // Build the first voxelizer
   Voxelizer& voxelizer = mVoxelizers.PushBack();
@@ -125,12 +131,15 @@ void VHacd::Initialize(TriangleMesh& mesh)
   voxelizer.FillOutside();
   voxelizer.Fill();
 
-  mProgress += sVoxelizationWeight;
-  UpdateProgress("Finished Voxelizing", mProgress);
+  mTotalPercent += sVoxelizationWeight;
+  UpdateProgress(mTotalPercent, "Voxelizing", mStepPercent, "Finished");
 }
 
 void VHacd::ComputeApproximateConvexDecomposition()
 {
+  mStepPercent = 0;
+  UpdateProgress(mTotalPercent, "Approximate Convex Decomposition", mStepPercent, String());
+
   Recurse(0);
 
   for (size_t i = 0; i < mVoxelizers.Size(); ++i)
@@ -144,6 +153,9 @@ void VHacd::ComputeApproximateConvexDecomposition()
   {
     mHulls[i].Build(mFinalVoxelizers[i]);
   }
+
+  mTotalPercent += sRecursionWeight;
+  UpdateProgress(mTotalPercent, "Approximate Convex Decomposition", mStepPercent, "Finished");
 }
 
 void VHacd::Recurse(int depth)
@@ -175,10 +187,10 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   if (mForceStop == true)
     return false;
 
-  UpdateProgress("Splitting", mProgress);
+  UpdateProgress(mTotalPercent, "Approximate Convex Decomposition", mStepPercent, BuildString("Depth: ", depth));
   float pow = Math::Pow(2.0f, (float)depth);
-  float invPow = (1.0f / pow) * sRecursionWeight;
-  mProgress += invPow / (float)mMaxRecusionDepth;
+  float invPow = (1.0f / pow);
+  mStepPercent += invPow / (float)mMaxRecusionDepth;
 
   Real voxelVolume = voxelizer.ComputeVolume();
   QuickHull hull;
@@ -213,8 +225,8 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   if (isConvexEnough)
   {
     mFinalVoxelizers.PushBack(voxelizer);
-    mProgress += invPow * ((float)mMaxRecusionDepth - depth - 1) / (float)mMaxRecusionDepth;
-    UpdateProgress("Splitting", mProgress);
+    mStepPercent += invPow * ((float)mMaxRecusionDepth - depth - 1) / (float)mMaxRecusionDepth;
+    UpdateProgress(mTotalPercent, "Approximate Convex Decomposition", mStepPercent, BuildString("Depth: ", depth));
     return false;
   }
 
@@ -340,15 +352,18 @@ float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
 
 void VHacd::MergeHulls()
 {
-  UpdateProgress("Merging Hulls", mProgress);
+  mStepPercent = 0;
+  UpdateProgress(mTotalPercent, "Merging Hulls", mStepPercent, String());
 
   Zilch::Array<float> volumes;
   volumes.Resize(mHulls.Size());
 
   Zilch::Array<float> combinedVolumes;
 
-  float percentIncrement = sMergingWeight / (mHulls.Size() - (float)mMaxHulls);
+  float percentIncrement = 1.0f / (mHulls.Size() - (float)mMaxHulls);
   
+  int count = 0;
+  int totalCount = mHulls.Size() - mMaxHulls;
   while (mHulls.Size() > (size_t)mMaxHulls)
   {
     if (mForceStop == true)
@@ -371,11 +386,13 @@ void VHacd::MergeHulls()
     mHulls[iX] = combinedHull;
     mHulls.EraseAt(iY);
 
-    mProgress += percentIncrement;
-    UpdateProgress("Merging Hulls", mProgress);
+    mStepPercent += percentIncrement;
+    ++count;
+    UpdateProgress(mTotalPercent, "Merging Hulls", mStepPercent, BuildString(count, " of ", totalCount));
   }
 
-  UpdateProgress("Finished Merging Hulls", mProgress);
+  mTotalPercent += sMergingWeight;
+  UpdateProgress(mTotalPercent, "Merging Hulls", mStepPercent, "Finished");
 }
 
 void VHacd::BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes)
@@ -440,16 +457,17 @@ void VHacd::Resample()
   if (!mResampleMesh || mForceStop == true)
     return;
 
-  UpdateProgress("Resampling", mProgress);
+  mStepPercent = 0;
+  UpdateProgress(mTotalPercent, "Resampling", mStepPercent, String());
 
   for (size_t i = 0; i < mHulls.Size(); ++i)
-    Resample(mHulls[i]);
+    Resample(mHulls[i], i, mHulls.Size());
 
-  mProgress += sResamplingWeight;
-  UpdateProgress("Finished Resampling", mProgress);
+  mTotalPercent += sResamplingWeight;
+  UpdateProgress(mTotalPercent, "Resampling", mStepPercent, "Finished");
 }
 
-void VHacd::Resample(QuickHull& hull)
+void VHacd::Resample(QuickHull& hull, int hullIndex, int totalHulls)
 {
   Array<Real3> points;
   points = hull.mVertices;
@@ -461,7 +479,7 @@ void VHacd::Resample(QuickHull& hull)
   Real3 center = aabb.GetCenter();
   Real diagonal = Math::Length(aabb.mMax - aabb.mMin);
 
-  float subPercent = sResamplingWeight / ((float)points.Size() + mHulls.Size());
+  float subPercent = totalHulls / ((float)points.Size() + mHulls.Size());
   for (size_t i = 0; i < points.Size(); ++i)
   {
     Ray ray;
@@ -479,16 +497,16 @@ void VHacd::Resample(QuickHull& hull)
         points[i] = newPoint;
     }
 
-    mProgress += subPercent;
+    mStepPercent += subPercent;
     if(i % 10)
-      UpdateProgress("Resampling", mProgress);
+      UpdateProgress(mTotalPercent, "Resampling", mStepPercent, BuildString(hullIndex, " of ", totalHulls));
   }
 
   hull.Build(points);
 }
 
-void VHacd::UpdateProgress(const String& message, float percentage)
+void VHacd::UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage)
 {
   if (mCallbackFn != nullptr)
-    mCallbackFn(message, percentage, mClientData);
+    mCallbackFn(totalPercent, stepName, stepPercent, stepMessage, mClientData);
 }

@@ -40,23 +40,21 @@ Zero::OsInt ThreadFn(void* data)
   return 0;
 }
 
-void BackgroundTask::UpdateProgress(float percentage)
+void BackgroundTask::UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage)
 {
-  UpdateProgress(percentage, String());
+  UpdateProgress(totalPercent, stepName, stepPercent, stepMessage, "JobProgress");
 }
 
-void BackgroundTask::UpdateProgress(float percentage, Zilch::StringParam message)
-{
-  UpdateProgress(percentage, message, "JobProgress");
-}
-
-void BackgroundTask::UpdateProgress(float percentage, Zilch::StringParam message, const String& eventName)
+void BackgroundTask::UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage, const String& eventName)
 {
   ProgressEvent* toSend = new ProgressEvent();
-  toSend->mPercentage = percentage;
+  toSend->mTotalPercentage = totalPercent;
+  toSend->mStepName = stepName;
+  toSend->mStepPercentage = stepPercent;
+  toSend->mStepMessage = stepMessage;
+
   toSend->mTask = this;
   toSend->mOwner = mOwner;
-  toSend->mMessage = message;
   toSend->mEventName = eventName;
 
   JobSystem* jobSystem = JobSystem::GetInstance();
@@ -66,8 +64,8 @@ void BackgroundTask::UpdateProgress(float percentage, Zilch::StringParam message
 
 void BackgroundTask::Finished()
 {
-  UpdateProgress(1.0f, String());
-  UpdateProgress(1.0f, String(), "JobFinished");
+  UpdateProgress(1.0f, String(), 1.0f, String());
+  UpdateProgress(1.0f, String(), 1.0f, String(), "JobFinished");
 }
 
 JobSystem* sJobSystem = nullptr;
@@ -110,7 +108,7 @@ void JobSystem::ShutdownInstance()
   mShutingdown = true;
   sThreadLock.Lock();
   for (size_t i = 0; i < mActiveJobs.Size(); ++i)
-    mActiveJobs[i]->MarkForShutdown();
+    mActiveJobs[i]->Cancel();
   sThreadLock.Unlock();
 
   for (size_t i = 0; i < mThreads.Size(); ++i)

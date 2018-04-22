@@ -9,7 +9,7 @@ class VHacd
 public:
   VHacd();
 
-  typedef void(*CallbackFn)(const String& message, float percentage, void* clientData);
+  typedef void(*CallbackFn)(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage, void* clientData);
   void SetProgressCallback(CallbackFn callbackFn, void* clientData);
 
   void Compute(Real fidelity, int recursions, TriangleMesh& mesh);
@@ -44,9 +44,9 @@ public:
   void FindHullsToMerge(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes, size_t& iX, size_t& iY);
 
   void Resample();
-  void Resample(QuickHull& hull);
+  void Resample(QuickHull& hull, int hullIndex, int totalHulls);
 
-  void UpdateProgress(const String& message, float percentage);
+  void UpdateProgress(float totalPercent, const String& stepName, float stepPercent, const String& stepMessage);
 
   Zero::Array<Voxelizer> mVoxelizers;
 
@@ -68,6 +68,7 @@ public:
   TriangleMesh mMesh;
   CallbackFn mCallbackFn;
   void* mClientData;
-  float mProgress;
+  float mTotalPercent;
+  float mStepPercent;
   bool mForceStop;
 };

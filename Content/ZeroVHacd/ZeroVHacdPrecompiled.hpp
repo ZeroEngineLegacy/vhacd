@@ -29,6 +29,7 @@ using Zilch::String;
 using ZeroEngine::Mesh;
 #include "Shapes.hpp"
 #include "ExtraMath.hpp"
+#include "StringBuilder.hpp"
 
 // Declares our Zilch Library (where we get LibraryBuilder from)
 // This also handles the plugin initialization
