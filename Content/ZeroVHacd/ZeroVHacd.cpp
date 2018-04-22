@@ -18,6 +18,7 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindMethod(OnJobFinished);
 
   ZilchBindGetterSetterProperty(Fidelity);
+  ZilchBindGetterSetterProperty(Refinement);
   ZilchBindFieldProperty(mMaxRecusionDepth);
   ZilchBindFieldProperty(mMaxHulls);
   ZilchBindFieldProperty(mAllowedConcavityVolumeError);
@@ -31,6 +32,7 @@ ZeroVHacd::ZeroVHacd()
 {
   mTask = nullptr;
   mFidelity = 0.75f;
+  mRefinement = 0.9f;
   mSubDivisions = Integer3(50, 50, 50);
   mMaxRecusionDepth = 6;
   mMaxHulls = 15;
@@ -84,6 +86,7 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   mTask->mVHacd.mAllowedVolumeSurfaceAreaRatio = mAllowedVolumeSurfaceAreaRatio;
   mTask->mVHacd.mBalanceWeight = mBalanceWeight;
   mTask->mVHacd.mSymmetryWeight = mSymmetryWeight;
+  mTask->mVHacd.mRefinement = mRefinement;
 
   mTask->mMesh.Create(mesh);
 
@@ -116,6 +119,16 @@ Real ZeroVHacd::GetFidelity()
 void ZeroVHacd::SetFidelity(Real fidelity)
 {
   mFidelity = Math::Clamp(fidelity, 0.0f, 1.0f);
+}
+
+Real ZeroVHacd::GetRefinement()
+{
+  return mRefinement;
+}
+
+void ZeroVHacd::SetRefinement(Real refinement)
+{
+  mRefinement = Math::Clamp(refinement, 0.0f, 1.0f);
 }
 
 int ZeroVHacd::GetHullCount()

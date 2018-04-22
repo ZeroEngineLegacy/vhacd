@@ -28,11 +28,15 @@ public:
   Real GetFidelity();
   void SetFidelity(Real fidelity);
 
+  Real GetRefinement();
+  void SetRefinement(Real refinement);
+
   int GetHullCount();
   Zilch::HandleOf<ZeroEngine::QuickHull3D> GetHull(int index);
   
 //private:
   Real mFidelity;
+  Real mRefinement;
   Integer3 mSubDivisions;
   int mMaxRecusionDepth;
   int mMaxHulls;

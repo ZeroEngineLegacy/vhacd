@@ -54,6 +54,8 @@ public:
   Zero::Array<QuickHull> mHulls;
 
   Real mFidelity;
+  Real mRefinement;
+  int mRefinementStep;
   Integer3 mSubDivisions;
   int mMaxRecusionDepth;
   int mMaxHulls;

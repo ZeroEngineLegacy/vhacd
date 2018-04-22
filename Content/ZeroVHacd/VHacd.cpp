@@ -20,6 +20,8 @@ VHacd::VHacd()
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
   mBalanceWeight = 0.05f;
   mSymmetryWeight = 0.05f;
+  mRefinement = 0.9f;
+  mRefinementStep = 5;
 }
 
 void VHacd::SetProgressCallback(CallbackFn callbackFn, void* clientData)
@@ -96,12 +98,17 @@ void VHacd::ComputeSubDivisions(Aabb& aabb)
 
   int axis1 = (largestAxis + 1) % 3;
   int axis2 = (largestAxis + 2) % 3;
-  //Real targetVoxelSize = Math::Ceil(cubicRoot / extents[largestAxis]);
   Integer3 old = mSubDivisions;
   mSubDivisions[largestAxis] = (int)Math::Ceil(extents[largestAxis] / targetVoxelSize);
   mSubDivisions[axis1] = (int)Math::Ceil(extents[axis1] / targetVoxelSize);
   mSubDivisions[axis2] = (int)Math::Ceil(extents[axis2] / targetVoxelSize);
-  //mSubDivisions = Integer3(1, 1, 1);
+
+  // Compute the min step value we can take as a quarter of the largest axis of 10, whichever is smaller.
+  // Doing more steps causes better speed and results as too few steps causes the full recursion
+  // to happen which creates a very large number of hulls.
+  float minSteps = Math::Min(10.0f, (float)mSubDivisions[largestAxis] / 4.0f);
+  Real refinementValue = Math::Lerp(minSteps, 1.0f, mRefinement);
+  mRefinementStep = (int)Math::Floor(refinementValue);
 }
 
 void VHacd::Initialize(TriangleMesh& mesh)
@@ -260,18 +267,16 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
 
 void VHacd::ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& planes)
 {
-  Real3 min = voxelizer.mAabb.mMin;
-  Real3 max = voxelizer.mAabb.mMax;
-
-  // Temporarily just make 'n' subdivisions on each axis to test
-  size_t subDivisions = 21;
-  for (size_t subDivision = 0; subDivision < subDivisions; ++subDivision)
+  size_t offset = mRefinementStep;
+  for(size_t axis = 0; axis < 3; ++axis)
   {
-    Real t = ((float)subDivision + 0.5f) / subDivisions;
-    Real3 value = Math::Lerp(min, max, t);
-    planes.PushBack(SplitPlane(0, value[0]));
-    planes.PushBack(SplitPlane(1, value[1]));
-    planes.PushBack(SplitPlane(2, value[2]));
+    for (size_t i = 0; i < (size_t)voxelizer.mSubDivisions[axis]; i += offset)
+    {
+      Integer3 voxelCoord = Integer3::cZero;
+      voxelCoord[axis] = i;
+      Aabb aabb = voxelizer.GetVoxelAabb(voxelCoord);
+      planes.PushBack(SplitPlane(axis, aabb.GetCenter()[axis]));
+    }
   }
 }
 

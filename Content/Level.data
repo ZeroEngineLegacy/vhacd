@@ -179,9 +179,9 @@ Level
 		var Name = "EditorCamera"
 		Transform 
 		{
-			var Translation = Real3{-13.8424911, 12.3197718, 40.06493}
+			var Translation = Real3{-4.41078568, 36.3489571, 57.7011642}
 			var Scale = Real3{1, 1, 1}
-			var Rotation = Quaternion{-0.0991086811, -0.232225969, -0.0237935018, 0.967306852}
+			var Rotation = Quaternion{-0.258308738, -0.060647741, -0.0162505489, 0.964019954}
 		}
 		CameraViewport 
 		{
@@ -238,10 +238,10 @@ Level
 		{
 			var ControlMode = ControlMode.Orbit
 			var Previous3DMode = ControlMode.Orbit
-			var LookDistance = 38.6586418
-			var VerticalAngle = 0.204204172
-			var HorizontalAngle = -5.81195402
-			var LookTarget = Real3{3.34325242, 4.48026562, 6.33537674}
+			var LookDistance = 63.7372971
+			var VerticalAngle = 0.523599505
+			var HorizontalAngle = -6.1575284
+			var LookTarget = Real3{2.50699782, 4.48026562, 2.93827271}
 			var MoveSensitivity = 1
 		}
 	}
@@ -376,16 +376,17 @@ Level
 		VHacdHelper 
 		{
 			var Mode = VHacdMode.Zero
-			var BuildPhysics = true
+			var BuildPhysics = false
 		}
 		ZeroVHacd 
 		{
 			var Fidelity = 0.75
+			var Refinement = 1
 			var MaxRecusionDepth = 20
-			var MaxHulls = 100
+			var MaxHulls = 1024
 			var AllowedConcavityVolumeError = 0.00100000005
 			var ResampleMesh = false
-			var AllowedVolumeSurfaceAreaRatio = 0
+			var AllowedVolumeSurfaceAreaRatio = 0.75
 			var BalanceWeight = 0.0500000007
 			var SymmetryWeight = 0.0500000007
 		}
@@ -437,11 +438,11 @@ Level
 		VHacdHelper 
 		{
 			var Mode = VHacdMode.Orig
-			var BuildPhysics = true
+			var BuildPhysics = false
 		}
 		VHacd_Orig 
 		{
-			var Concavity = 0.00100000005
+			var Concavity = 9.99999975e-05
 			var Alpha = 0.0500000007
 			var Beta = 0.0500000007
 			var Resolution = 100000
@@ -452,7 +453,7 @@ Level
 			var MinVolumePerCH = 9.99999975e-05
 			var MaxVerticesPerCH = 64
 			var MaxConvexHulls = 1024
-			var ProjectHullVertices = true
+			var ProjectHullVertices = false
 		}
 	}
 }
