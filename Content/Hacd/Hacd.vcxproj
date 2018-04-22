@@ -144,42 +144,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\HacdPlugin\src\btAlignedAllocator.h" />
-    <ClInclude Include="..\HacdPlugin\src\btAlignedObjectArray.h" />
-    <ClInclude Include="..\HacdPlugin\src\btConvexHullComputer.h" />
-    <ClInclude Include="..\HacdPlugin\src\btMinMax.h" />
-    <ClInclude Include="..\HacdPlugin\src\btScalar.h" />
-    <ClInclude Include="..\HacdPlugin\src\btVector3.h" />
-    <ClInclude Include="..\HacdPlugin\src\FloatMath.h" />
-    <ClInclude Include="..\HacdPlugin\src\VHACD.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdCircularList.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdICHull.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdManifoldMesh.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdMesh.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdMutex.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdRaycastMesh.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdSArray.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdTimer.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdVector.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdVHACD.h" />
-    <ClInclude Include="..\HacdPlugin\src\vhacdVolume.h" />
+    <ClInclude Include="src\btAlignedAllocator.h" />
+    <ClInclude Include="src\btAlignedObjectArray.h" />
+    <ClInclude Include="src\btConvexHullComputer.h" />
+    <ClInclude Include="src\btMinMax.h" />
+    <ClInclude Include="src\btScalar.h" />
+    <ClInclude Include="src\btVector3.h" />
+    <ClInclude Include="src\FloatMath.h" />
+    <ClInclude Include="src\VHACD.h" />
+    <ClInclude Include="src\vhacdCircularList.h" />
+    <ClInclude Include="src\vhacdICHull.h" />
+    <ClInclude Include="src\vhacdManifoldMesh.h" />
+    <ClInclude Include="src\vhacdMesh.h" />
+    <ClInclude Include="src\vhacdMutex.h" />
+    <ClInclude Include="src\vhacdRaycastMesh.h" />
+    <ClInclude Include="src\vhacdSArray.h" />
+    <ClInclude Include="src\vhacdTimer.h" />
+    <ClInclude Include="src\vhacdVector.h" />
+    <ClInclude Include="src\vhacdVHACD.h" />
+    <ClInclude Include="src\vhacdVolume.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\HacdPlugin\src\btAlignedAllocator.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\btConvexHullComputer.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\FloatMath.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\VHACD-ASYNC.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\VHACD.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\vhacdICHull.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\vhacdManifoldMesh.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\vhacdMesh.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\vhacdRaycastMesh.cpp" />
-    <ClCompile Include="..\HacdPlugin\src\vhacdVolume.cpp" />
+    <ClCompile Include="src\btAlignedAllocator.cpp" />
+    <ClCompile Include="src\btConvexHullComputer.cpp" />
+    <ClCompile Include="src\FloatMath.cpp" />
+    <ClCompile Include="src\VHACD-ASYNC.cpp" />
+    <ClCompile Include="src\VHACD.cpp" />
+    <ClCompile Include="src\vhacdICHull.cpp" />
+    <ClCompile Include="src\vhacdManifoldMesh.cpp" />
+    <ClCompile Include="src\vhacdMesh.cpp" />
+    <ClCompile Include="src\vhacdRaycastMesh.cpp" />
+    <ClCompile Include="src\vhacdVolume.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\HacdPlugin\src\FloatMath.inl" />
-    <None Include="..\HacdPlugin\src\vhacdCircularList.inl" />
-    <None Include="..\HacdPlugin\src\vhacdVector.inl" />
+    <None Include="src\FloatMath.inl" />
+    <None Include="src\vhacdCircularList.inl" />
+    <None Include="src\vhacdVector.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
