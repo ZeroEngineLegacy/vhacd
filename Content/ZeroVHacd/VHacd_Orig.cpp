@@ -1,5 +1,5 @@
 ﻿#include "ZeroVHacdPrecompiled.hpp"
-#include "..\HacdPlugin\src\VHACD.h"
+#include "..\Hacd\src\VHACD.h"
 
 ZilchDefineType(VHacd_Orig, builder, type)
 {
