@@ -482,7 +482,7 @@ void VHacd::Resample(QuickHull& hull, int hullIndex, int totalHulls)
     aabb.Expand(points[i]);
   }
   Real3 center = aabb.GetCenter();
-  Real diagonal = Math::Length(aabb.mMax - aabb.mMin);
+  Real diagonal = mFinalVoxelizers[0].mVoxelSize.Length();
 
   float subPercent = totalHulls / ((float)points.Size() + mHulls.Size());
   for (size_t i = 0; i < points.Size(); ++i)
@@ -498,7 +498,7 @@ void VHacd::Resample(QuickHull& hull, int hullIndex, int totalHulls)
       Real3 newPoint = ray.mStart + ray.mDirection * t;
       Real newDistance = Math::Distance(newPoint, points[i]);
       //float delta = Math::Abs(distance - t);
-      if (newDistance / diagonal < 0.05f)
+      if (newDistance / diagonal < 0.25f)
         points[i] = newPoint;
     }
 
