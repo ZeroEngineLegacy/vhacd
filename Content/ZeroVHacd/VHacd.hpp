@@ -36,8 +36,8 @@ public:
 
   bool SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth);
   void ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& planes);
-  SplitPlane FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes);
-  float TestSplit(Voxelizer& voxelizer, int axis, Real axisValue);
+  SplitPlane FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity);
+  float TestSplit(Voxelizer& voxelizer, int axis, Real axisValue, Real parentConcavity);
 
   void MergeHulls();
   void BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes);

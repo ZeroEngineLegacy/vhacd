@@ -246,7 +246,7 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   ComputePossibleSplitPlanes(voxelizer, planes);
 
   // Find what the best split plane
-  SplitPlane bestSplitPlane = FindBestSplitPlane(voxelizer, planes);
+  SplitPlane bestSplitPlane = FindBestSplitPlane(voxelizer, planes, measuredConcavityVolumeError);
 
   // @ToDo
   bool refinement = false;
@@ -280,7 +280,7 @@ void VHacd::ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& 
   }
 }
 
-VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes)
+VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity)
 {
   size_t bestPlaneIndex = 0;
   float bestScore = Math::PositiveMax();
@@ -290,7 +290,7 @@ VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPla
     SplitPlane& planeData = planes[i];
     int planeAxis = planeData.mAxis;
     float axisValue = planeData.mAxisValue;
-    float score = TestSplit(voxelizer, planeAxis, axisValue);
+    float score = TestSplit(voxelizer, planeAxis, axisValue, parentConcavity);
     if (score < bestScore)
     {
       bestScore = score;
@@ -301,7 +301,7 @@ VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPla
   return planes[bestPlaneIndex];
 }
 
-float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
+float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue, Real parentConcavity)
 {
   if (mForceStop == true)
     return Math::PositiveMax();
@@ -349,8 +349,8 @@ float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue)
   Real symmetry = w * voxelizer.mRevolutionAxis[axis];
 
   // These 3 scores are then combined with a few weight values (penalize most heavily based upon concavity).
-  // For unknown reason, the other weights are also scaled by the concavity error (so they become worth less the less concave it is?)
-  Real score = concavityError + mBalanceWeight * balance * concavityError + mSymmetryWeight * symmetry * concavityError;
+  // For unknown reason, the other weights are also scaled by the parent's concavity error (so they become worth less the less concave it is?)
+  Real score = concavityError + mBalanceWeight * balance * parentConcavity + mSymmetryWeight * symmetry * parentConcavity;
 
   return score;
 }
