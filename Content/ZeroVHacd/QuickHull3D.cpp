@@ -116,10 +116,6 @@ bool QuickHull3D::Build(const Array<Vec3>& points, void* stack)
   // Clear the previous data in-case this hull is being re-used
   Clear();
 
-  // Can't construct a hull from less than 4 points
-  if(points.Size() < 4)
-    return false;
-
   // Allocate the memory pools for this run
   AllocatePools(points);
 
@@ -137,22 +133,8 @@ bool QuickHull3D::Build(const Array<Vec3>& points, void* stack)
   if(!BuildInitialHull())
     return false;
 
-  // Partition all vertices to their "best" face. This allows
-  // us to efficiently check for furthest away points.
-  ComputeInitialConflictLists();
-
-  // Iteratively find a vertex that is outside the hull and then add it to the hull until no vertices remain.
-  QuickHullVertex* conflictVertex = nullptr;
-  QuickHullFace* conflictFace = nullptr;
-  FindNextConflictVertex(conflictVertex, conflictFace);
-  while(conflictVertex != nullptr)
-  {
-    // Draw a sub-step for debugging
-    DrawFoundConflictVertex(conflictVertex, conflictFace);
-
-    AddVertexToHull(conflictVertex, conflictFace);
-    FindNextConflictVertex(conflictVertex, conflictFace);
-  }
+  // Add all of the points to the hull
+  AddAllPoints();
 
   // Debug drawing and validation for the final hull
   DrawFinalHull(points);
@@ -164,6 +146,10 @@ bool QuickHull3D::Build(const Array<Vec3>& points, void* stack)
 
 void QuickHull3D::Clear()
 {
+  mVertices.Clear();
+  mEdges.Clear();
+  mFaces.Clear();
+
   for (size_t i = 0; i < mVertexPool.Size(); ++i)
     delete mVertexPool[i];
   for (size_t i = 0; i < mEdgePool.Size(); ++i)
@@ -398,12 +384,16 @@ bool QuickHull3D::BuildInitialHull()
 
   // Find the point furthest away from the line [v0, v1].
   QuickHullVertex* v2 = FindVertexFurthestFrom(v0, v1);
-  ErrorIf(v2 == nullptr, "Invalid furthest point from line");
+  // If we had colinear geometry we'd fail to find this point
+  if (v2 == nullptr)
+    return false;
   mVertices.Erase(v2);
 
   // Find the point furthest away from the triangle [v0, v1, v2].
   QuickHullVertex* v3 = FindVertexFurthestFrom(v0, v1, v2);
-  ErrorIf(v2 == nullptr, "Invalid furthest point from triangle");
+  // If we had coplanar geometry we'd fail to find this point
+  if (v3 == nullptr)
+    return false;
   mVertices.Erase(v3);
 
   // The signed volume of a tetrahedron can be computed as 1/6 the determinant of this matrix.
@@ -576,6 +566,27 @@ QuickHull3D::QuickHullVertex* QuickHull3D::FindVertexFurthestFrom(QuickHullVerte
   DrawInitialTetrahedron(v0, v1, v2, furthestVertex);
 
   return furthestVertex;
+}
+
+
+void QuickHull3D::AddAllPoints()
+{
+  // Partition all vertices to their "best" face. This allows
+  // us to efficiently check for furthest away points.
+  ComputeInitialConflictLists();
+
+  // Iteratively find a vertex that is outside the hull and then add it to the hull until no vertices remain.
+  QuickHullVertex* conflictVertex = nullptr;
+  QuickHullFace* conflictFace = nullptr;
+  FindNextConflictVertex(conflictVertex, conflictFace);
+  while (conflictVertex != nullptr)
+  {
+    // Draw a sub-step for debugging
+    DrawFoundConflictVertex(conflictVertex, conflictFace);
+
+    AddVertexToHull(conflictVertex, conflictFace);
+    FindNextConflictVertex(conflictVertex, conflictFace);
+  }
 }
 
 void QuickHull3D::ComputeInitialConflictLists()
@@ -1271,6 +1282,46 @@ void QuickHull3D::DrawHullWithDescription(StringParam text)
 
 void QuickHull3D::DrawFinalHull(const Array<Vec3>& points)
 {
+}
+
+//-------------------------------------------------------------------IncrementalQuickHull3D
+IncrementalQuickHull3D::IncrementalQuickHull3D()
+{
+  mHasInitialHull = false;
+}
+
+bool IncrementalQuickHull3D::Expand(const Array<Vec3>& points)
+{
+  // If we haven't succeeded in building a hull already then use the pre-existing vertices we have cached
+  if(!mHasInitialHull)
+  {
+    // Try to build a hull from scratch with all of the points we've been given so far
+    mPointsToAdd.Insert(mPointsToAdd.End(), points.All());
+    bool result = Build(mPointsToAdd);
+    // If we succeeded then mark that we've made an initial hull so we can perform incremental logic next time.
+    if (result)
+      mHasInitialHull = true;
+    return result;
+  }
+
+  // Remove all cached vertices then perform the regular incremental expansion
+  mVertices.Clear();
+
+  // Turn all of the points into a working format (allocates vertices and performs vertex welding)
+  size_t resultPointCount;
+  if (!BuildDataSet(points, resultPointCount))
+    return false;
+
+  // Add all of the points to the hull
+  AddAllPoints();
+  return true;
+}
+
+void IncrementalQuickHull3D::Clear()
+{
+  QuickHull3D::Clear();
+  mPointsToAdd.Clear();
+  mHasInitialHull = false;
 }
 
 }//namespace Zero

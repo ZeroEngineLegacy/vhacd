@@ -26,6 +26,7 @@ ZilchDefineType(ZeroVHacd, builder, type)
   ZilchBindFieldProperty(mAllowedVolumeSurfaceAreaRatio);
   ZilchBindFieldProperty(mBalanceWeight);
   ZilchBindFieldProperty(mSymmetryWeight);
+  ZilchBindFieldProperty(mFast);
 }
 
 ZeroVHacd::ZeroVHacd()
@@ -41,6 +42,7 @@ ZeroVHacd::ZeroVHacd()
   mAllowedVolumeSurfaceAreaRatio = 2.0f / 2.5f;
   mBalanceWeight = 0.05f;
   mSymmetryWeight = 0.05f;
+  mFast = false;
 }
 
 ZeroVHacd::~ZeroVHacd()
@@ -87,6 +89,7 @@ void ZeroVHacd::Compute(Zilch::HandleOf<Mesh>& meshHandle)
   mTask->mVHacd.mBalanceWeight = mBalanceWeight;
   mTask->mVHacd.mSymmetryWeight = mSymmetryWeight;
   mTask->mVHacd.mRefinement = mRefinement;
+  mTask->mVHacd.mFast = mFast;
 
   mTask->mMesh.Create(mesh);
 

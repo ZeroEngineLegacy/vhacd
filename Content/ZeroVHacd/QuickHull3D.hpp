@@ -115,6 +115,7 @@ public:
   /// Build a convex mesh from the given points. If the debug drawing
   /// stack is non-null then debug drawing information will be filled out.
   bool Build(const Array<Vec3>& points, void* stack = nullptr);
+  
   /// Clear all cached memory to start another quick-hull run.
   void Clear();
 
@@ -130,7 +131,7 @@ public:
   /// A list of all faces in the final convex hull.
   FaceList::range GetFaces();
 
-private:
+protected:
 
   // Create the memory pools for this run of quickhull.
   void AllocatePools(const Array<Vec3>& points);
@@ -150,6 +151,8 @@ private:
   QuickHullVertex* FindVertexFurthestFrom(QuickHullVertex* v0, QuickHullVertex* v1);
   /// Finds the vertex furthest away from the triangle defined by v0, v1, and v2.
   QuickHullVertex* FindVertexFurthestFrom(QuickHullVertex* v0, QuickHullVertex* v1, QuickHullVertex* v2);
+
+  void AddAllPoints();
 
   /// Partition each vertex to a conflict list on one of the initial faces. 
   /// is management helps speed up the inner loop of quick-hull.
@@ -259,6 +262,19 @@ private:
   Array<QuickHullVertex*> mVertexPool;
   Array<QuickHullEdge*> mEdgePool;
   Array<QuickHullFace*> mFacePool;
+};
+
+//-------------------------------------------------------------------IncrementalQuickHull3D
+class IncrementalQuickHull3D : public QuickHull3D
+{
+public:
+  IncrementalQuickHull3D();
+  bool Expand(const Array<Vec3>& points);
+  void Clear();
+
+private:
+  Array<Vec3> mPointsToAdd;
+  bool mHasInitialHull;
 };
 
 }//namespace Zero

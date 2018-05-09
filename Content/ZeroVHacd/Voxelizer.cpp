@@ -8,6 +8,17 @@ void Voxelizer::CreateVoxels(Integer3 subDivision, const Aabb& aabb)
   mAabb = aabb;
   mSubDivisions = subDivision;
   mVoxels.Clear();
+  mVoxels.Resize(mSubDivisions.x * mSubDivisions.y * mSubDivisions.z);
+
+  Real3 size = aabb.GetHalfSize() * 2;
+  mVoxelSize = size / Real3((Real)mSubDivisions.x, (Real)mSubDivisions.y, (Real)mSubDivisions.z);
+}
+
+void Voxelizer::CreateVoxels(Integer3 subDivision, const Aabb& aabb, VoxelState::Enum defaultValue)
+{
+  mAabb = aabb;
+  mSubDivisions = subDivision;
+  mVoxels.Clear();
   mVoxels.Resize(mSubDivisions.x * mSubDivisions.y * mSubDivisions.z, VoxelState::Unknown);
 
   Real3 size = aabb.GetHalfSize() * 2;
@@ -255,6 +266,244 @@ bool Voxelizer::Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer
     }
   }
   return true;
+}
+
+bool Voxelizer::Split(int axisIndex, int frontSplitIndexInclusive, Voxelizer& front, Voxelizer& back)
+{
+  int axis1 = (axisIndex + 1) % 3;
+  int axis2 = (axisIndex + 2) % 3;
+  Integer3 subDivisions = Integer3(mSubDivisions[axisIndex], mSubDivisions[axis1], mSubDivisions[axis2]);
+  int crossArea = subDivisions.y * subDivisions.z;
+
+  int frontCount = frontSplitIndexInclusive + 1;
+  int backCount = subDivisions.x - frontCount;
+  int voxelsFront = frontCount * crossArea;
+  int voxelsBack = backCount * crossArea;
+
+  if (frontCount == 0 || backCount == 0)
+    return false;
+
+
+  front.mSubDivisions[axisIndex] = frontCount;
+  front.mSubDivisions[axis1] = mSubDivisions[axis1];
+  front.mSubDivisions[axis2] = mSubDivisions[axis2];
+  front.mVoxelSize = mVoxelSize;
+  back.mSubDivisions[axisIndex] = backCount;
+  back.mSubDivisions[axis1] = mSubDivisions[axis1];
+  back.mSubDivisions[axis2] = mSubDivisions[axis2];
+  back.mVoxelSize = mVoxelSize;
+
+  Real3 frontMin = mAabb.mMin;
+  Real3 frontMax = mAabb.mMax;
+  frontMax[axisIndex] = frontMin[axisIndex] + frontCount * mVoxelSize[axisIndex];
+  front.CreateVoxels(front.mSubDivisions, Aabb(frontMin, frontMax));
+
+  Real3 backMin = mAabb.mMin;
+  Real3 backMax = mAabb.mMax;
+  backMin[axisIndex] = backMax[axisIndex] - backCount * mVoxelSize[axisIndex];
+  back.CreateVoxels(back.mSubDivisions, Aabb(backMin, backMax));
+
+  for (int z = 0; z < front.mSubDivisions.z; ++z)
+  {
+    for (int y = 0; y < front.mSubDivisions.y; ++y)
+    {
+      for (int x = 0; x < front.mSubDivisions.x; ++x)
+      {
+        Integer3 voxelCoord = Integer3(x, y, z);
+
+        front.SetVoxel(voxelCoord, GetVoxel(voxelCoord));
+      }
+    }
+  }
+  for (int z = 0; z < back.mSubDivisions.z; ++z)
+  {
+    for (int y = 0; y < back.mSubDivisions.y; ++y)
+    {
+      for (int x = 0; x < back.mSubDivisions.x; ++x)
+      {
+        Integer3 voxelCoord = Integer3(x, y, z);
+        Integer3 thisVoxelCoord = voxelCoord;
+        thisVoxelCoord[axisIndex] += frontCount;
+        back.SetVoxel(voxelCoord, GetVoxel(thisVoxelCoord));
+      }
+    }
+  }
+
+  for (int v1 = 0; v1 < mSubDivisions[axis1]; ++v1)
+  {
+    for (int v2 = 0; v2 < mSubDivisions[axis2]; ++v2)
+    {
+      Integer3 frontCoord = Integer3(0, 0, 0);
+      frontCoord[axis1] = v1;
+      frontCoord[axis2] = v2;
+      Integer3 backCoord = frontCoord;
+      frontCoord[axisIndex] = frontSplitIndexInclusive;
+      backCoord[axisIndex] = 0;
+
+      if (front.GetVoxel(frontCoord) == VoxelState::Inside)
+        front.SetVoxel(frontCoord, VoxelState::Surface);
+      if (back.GetVoxel(backCoord) == VoxelState::Inside)
+        back.SetVoxel(backCoord, VoxelState::Surface);
+    }
+  }
+  return true;
+}
+
+bool Voxelizer::TestSplit(int axisIndex, int splitIndex, Voxelizer& front, Voxelizer& back)
+{
+  int axis1 = (axisIndex + 1) % 3;
+  int axis2 = (axisIndex + 2) % 3;
+  Integer3 subDivisions = Integer3(mSubDivisions[axisIndex], mSubDivisions[axis1], mSubDivisions[axis2]);
+  int crossArea = subDivisions.y * subDivisions.z;
+
+  int frontCount = splitIndex + 1;
+  int backCount = subDivisions.x - frontCount;
+  int voxelsFront = frontCount * crossArea;
+  int voxelsBack = backCount * crossArea;
+
+  if (frontCount == 0 || backCount == 0)
+    return false;
+
+
+  front.mSubDivisions[axisIndex] = frontCount;
+  front.mSubDivisions[axis1] = mSubDivisions[axis1];
+  front.mSubDivisions[axis2] = mSubDivisions[axis2];
+  front.mVoxelSize = mVoxelSize;
+  back.mSubDivisions[axisIndex] = backCount;
+  back.mSubDivisions[axis1] = mSubDivisions[axis1];
+  back.mSubDivisions[axis2] = mSubDivisions[axis2];
+  back.mVoxelSize = mVoxelSize;
+
+  Real3 frontMin = mAabb.mMin;
+  Real3 frontMax = mAabb.mMax;
+  frontMax[axisIndex] = frontMin[axisIndex] + frontCount * mVoxelSize[axisIndex];
+  front.CreateVoxels(front.mSubDivisions, Aabb(frontMin, frontMax));
+
+  Real3 backMin = mAabb.mMin;
+  Real3 backMax = mAabb.mMax;
+  backMin[axisIndex] = backMax[axisIndex] - backCount * mVoxelSize[axisIndex];
+  back.CreateVoxels(back.mSubDivisions, Aabb(backMin, backMax));
+
+  for (int z = 0; z < front.mSubDivisions.z; ++z)
+  {
+    for (int y = 0; y < front.mSubDivisions.y; ++y)
+    {
+      for (int x = 0; x < front.mSubDivisions.x; ++x)
+      {
+        Integer3 voxelCoord = Integer3(x, y, z);
+
+        front.SetVoxel(voxelCoord, GetVoxel(voxelCoord));
+      }
+    }
+  }
+  for (int z = 0; z < back.mSubDivisions.z; ++z)
+  {
+    for (int y = 0; y < back.mSubDivisions.y; ++y)
+    {
+      for (int x = 0; x < back.mSubDivisions.x; ++x)
+      {
+        Integer3 voxelCoord = Integer3(x, y, z);
+        Integer3 thisVoxelCoord = voxelCoord;
+        thisVoxelCoord[axisIndex] += frontCount;
+        back.SetVoxel(voxelCoord, GetVoxel(thisVoxelCoord));
+      }
+    }
+  }
+
+  for (int v1 = 0; v1 < mSubDivisions[axis1]; ++v1)
+  {
+    for (int v2 = 0; v2 < mSubDivisions[axis2]; ++v2)
+    {
+      Integer3 frontCoord = Integer3(0, 0, 0);
+      frontCoord[axis1] = v1;
+      frontCoord[axis2] = v2;
+      Integer3 backCoord = frontCoord;
+      frontCoord[axisIndex] = splitIndex;
+      backCoord[axisIndex] = 0;
+
+      if (front.GetVoxel(frontCoord) == VoxelState::Inside)
+        front.SetVoxel(frontCoord, VoxelState::Surface);
+      if (back.GetVoxel(backCoord) == VoxelState::Inside)
+        back.SetVoxel(backCoord, VoxelState::Surface);
+    }
+  }
+  return true;
+}
+
+bool Voxelizer::GetSplitTest(int axisIndex, int axisStartInclusive, int axisEndExclusive, Array<Real3>& surfaceVoxelCenters, Real& volume)
+{
+  // Clear the volume to zero no matter what
+  volume = 0;
+
+  // Check how many split planes to include. If there aren't any then we can't do anything (mostly a sanity check)
+  int count = Math::Abs(axisStartInclusive - axisEndExclusive);
+  if (count == 0)
+    return false;
+
+  // Compute the other two axes
+  int axis1 = (axisIndex + 1) % 3;
+  int axis2 = (axisIndex + 2) % 3;
+  
+  // Keep track of how many voxels have volume
+  int voxelCount = 0;
+  // Determine whether we are traversing from negative to positive or vice versa
+  int direction = Math::Sign(axisEndExclusive - axisStartInclusive);
+  
+  // Iterate over the primary axis from start to end (exclusive)
+  for (int i = axisStartInclusive; i != axisEndExclusive; i += direction)
+  {
+    for (int v1 = 0; v1 < mSubDivisions[axis1]; ++v1)
+    {
+      for (int v2 = 0; v2 < mSubDivisions[axis2]; ++v2)
+      {
+        Integer3 voxelCoord;
+        voxelCoord[axisIndex] = i;
+        voxelCoord[axis1] = v1;
+        voxelCoord[axis2] = v2;
+
+        // Check the current voxel's value. If it's on the inside then just count it for volume calculation.
+        // If it's a surface voxel then we have to include it in volume calculations but also return it as
+        // a voxel on the surface (so the convex hull can be efficiently built).
+        VoxelState::Enum state = GetVoxel(voxelCoord);
+        if (state == VoxelState::Surface)
+        {
+          Aabb voxelAabb = GetVoxelAabb(voxelCoord);
+          surfaceVoxelCenters.PushBack(voxelAabb.GetCenter());
+          ++voxelCount;
+        }
+        else if (state == VoxelState::Inside)
+        {
+          ++voxelCount;
+        }
+      }
+    }
+  }
+
+  // Calculate the total volume based upon the number of voxels
+  Real voxelVolume = mVoxelSize.x * mVoxelSize.y * mVoxelSize.z;
+  volume = voxelCount * voxelVolume;
+
+  return true;
+}
+
+void Voxelizer::AabbCentersToPoints(Array<Vector3>& voxelCenters, Array<Real3>& points)
+{
+  for (size_t i = 0; i < voxelCenters.Size(); ++i)
+    AabbCenterToPoints(voxelCenters[i], points);
+}
+
+void Voxelizer::AabbCenterToPoints(Vector3& voxelCenter, Array<Real3>& points)
+{
+  Real3 min = voxelCenter - mVoxelSize * 0.5f;
+  Real3 max = voxelCenter + mVoxelSize * 0.5f;
+  points.PushBack(Real3(min.x, min.y, min.z));
+  points.PushBack(Real3(min.x, min.y, max.z));
+  points.PushBack(Real3(min.x, max.y, min.z));
+  points.PushBack(Real3(min.x, max.y, max.z));
+  points.PushBack(Real3(max.x, min.y, min.z));
+  points.PushBack(Real3(max.x, min.y, max.z));
+  points.PushBack(Real3(max.x, max.y, min.z));
+  points.PushBack(Real3(max.x, max.y, max.z));
 }
 
 void Voxelizer::ComputeEigenValuesAndVectors(Real3& eigenValues, Matrix3& eigenVectors)

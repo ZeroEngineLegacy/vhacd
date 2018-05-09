@@ -4,6 +4,17 @@
 #include "Voxelizer.hpp"
 #include "QuickHull.hpp"
 
+struct SplitData
+{
+  Real mFrontHullVolume;
+  Real mFrontVoxelVolume;
+  Real mBackHullVolume;
+  Real mBackVoxelVolume;
+
+  Real mSplitValue;
+  int mFrontIndex;
+};
+
 class VHacd
 {
 public:
@@ -27,6 +38,7 @@ public:
     }
     Real mAxisValue;
     int mAxis;
+    int mAxisDiscretizedValue;
   };
 
   void ComputeSubDivisions(Aabb& aabb);
@@ -36,8 +48,11 @@ public:
 
   bool SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers, int depth);
   void ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& planes);
-  SplitPlane FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity);
+  bool FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity, SplitPlane& result);
+  bool FindBestSplitPlaneNew(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity, SplitPlane& result);
+  void GetSplitVolumes(Voxelizer& voxelizer, int axis, Array<SplitData>& splitData);
   float TestSplit(Voxelizer& voxelizer, int axis, Real axisValue, Real parentConcavity);
+  float ComputeScore(SplitData& splitData, int axis, Voxelizer& voxelizer, Real parentConcavity);
 
   void MergeHulls();
   void BuildHullTable(Zilch::Array<Real>& volumes, Zilch::Array<Real>& combinedVolumes);
@@ -73,4 +88,5 @@ public:
   float mTotalPercent;
   float mStepPercent;
   bool mForceStop;
+  bool mFast;
 };

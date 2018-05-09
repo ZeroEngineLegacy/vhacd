@@ -30,8 +30,8 @@ bool QuickHull::Build(Voxelizer& voxelizer)
 
         if (voxel == VoxelState::Surface)
         {
-          Real3 min = voxelCenter - voxelizer.mVoxelSize * 0.5;
-          Real3 max = voxelCenter + voxelizer.mVoxelSize * 0.5;
+          Real3 min = voxelCenter - voxelizer.mVoxelSize * 0.5f;
+          Real3 max = voxelCenter + voxelizer.mVoxelSize * 0.5f;
           points.PushBack(Real3(min.x, min.y, min.z));
           points.PushBack(Real3(min.x, min.y, max.z));
           points.PushBack(Real3(min.x, max.y, min.z));
@@ -62,7 +62,7 @@ bool QuickHull::Build(QuickHull& hull0, QuickHull& hull1)
 bool QuickHull::Build(Zilch::Array<Real3>& vertices)
 {
   Clear();
-  Zero::QuickHull3D quickHull;
+  Zero::IncrementalQuickHull3D quickHull;
   bool success = quickHull.Build(vertices);
 
   if (success)
@@ -108,7 +108,7 @@ Real QuickHull::ComputeVolume()
   return hullVolume;
 }
 
-void QuickHull::BakeHull(Zero::QuickHull3D& quickHull)
+void QuickHull::BakeHull(Zero::IncrementalQuickHull3D& quickHull)
 {
   typedef Zero::QuickHull3D::QuickHullVertex QuickHullVertex;
   typedef Zero::QuickHull3D::QuickHullEdge QuickHullEdge;

@@ -45,6 +45,7 @@ public:
   Real mAllowedVolumeSurfaceAreaRatio;
   Real mBalanceWeight;
   Real mSymmetryWeight;
+  bool mFast;
 
   Zero::Array<Zilch::HandleOf<ZeroEngine::QuickHull3D> > mHulls;
   VHacdTask* mTask;

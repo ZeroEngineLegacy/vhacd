@@ -13,6 +13,7 @@ class Voxelizer
 public:
 
   void CreateVoxels(Integer3 subDivision, const Aabb& aabb);
+  void CreateVoxels(Integer3 subDivision, const Aabb& aabb, VoxelState::Enum defaultValue);
   void WriteTriangle(const Triangle& tri);
 
   Real ComputeVolume();
@@ -31,6 +32,13 @@ public:
   void Fill();
 
   bool Split(int axisIndex, Real axisValue, Voxelizer& front, Voxelizer& back);
+  bool Split(int axisIndex, int frontSplitIndexInclusive, Voxelizer& front, Voxelizer& back);
+  bool TestSplit(int axisIndex, int splitIndex, Voxelizer& front, Voxelizer& back);
+  bool GetSplitTest(int axisIndex, int axisStartInclusive, int axisEndExclusive, Array<Real3>& surfaceVoxelCenters, Real& volume);
+
+  void AabbCentersToPoints(Array<Vector3>& voxelCenters, Array<Real3>& points);
+  void AabbCenterToPoints(Vector3& voxelCenter, Array<Real3>& points);
+
   void ComputeEigenValuesAndVectors(Real3& eigenValues, Matrix3& eigenVectors);
   void ComputeSymmetryComponents();
 

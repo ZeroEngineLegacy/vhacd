@@ -14,6 +14,7 @@ VHacd::VHacd()
   mForceStop = false;
   mTotalPercent = 0;
   mStepPercent = 0;
+  mFast = false;
 
   mResampleMesh = true;
   mAllowedConcavityVolumeError = 0.001f;
@@ -64,7 +65,7 @@ void VHacd::Clear()
 void VHacd::ComputeSubDivisions(Aabb& aabb)
 {
   float minVoxels = 100;
-  float maxVoxels = 300000;
+  float maxVoxels = 1000000;
   // Use quadratic interpolation to get a better feel from fidelity
   float t = mFidelity * mFidelity;
   int targetVoxelCount = (int)Math::Lerp(minVoxels, maxVoxels, t);
@@ -126,7 +127,7 @@ void VHacd::Initialize(TriangleMesh& mesh)
 
   // Build the first voxelizer
   Voxelizer& voxelizer = mVoxelizers.PushBack();
-  voxelizer.CreateVoxels(mSubDivisions, aabb);
+  voxelizer.CreateVoxels(mSubDivisions, aabb, VoxelState::Unknown);
 
   // Write each triangle in the mesh to the voxel grid
   for (size_t i = 0; i < mMesh.GetCount(); ++i)
@@ -246,8 +247,21 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   ComputePossibleSplitPlanes(voxelizer, planes);
 
   // Find what the best split plane
-  SplitPlane bestSplitPlane = FindBestSplitPlane(voxelizer, planes, measuredConcavityVolumeError);
+  SplitPlane bestSplitPlane;
+  bool foundSplitPlane = false;
+  if(!mFast)
+    foundSplitPlane = FindBestSplitPlane(voxelizer, planes, measuredConcavityVolumeError, bestSplitPlane);
+  else
+    foundSplitPlane = FindBestSplitPlaneNew(voxelizer, planes, measuredConcavityVolumeError, bestSplitPlane);
 
+  // If we couldn't find a split plane then there's nothing more to do with this voxel grid.
+  // This is likely due to a lower refinement that made the test split completely lopsided.
+  if(!foundSplitPlane)
+  {
+    mFinalVoxelizers.PushBack(voxelizer);
+    return false;
+  }
+  
   // @ToDo
   bool refinement = false;
   if (refinement)
@@ -259,9 +273,21 @@ bool VHacd::SplitVoxelizer(Voxelizer& voxelizer, Array<Voxelizer>& newVoxelizers
   // @ JoshD: Optimize these copies
   Voxelizer front;
   Voxelizer back;
-  voxelizer.Split(bestSplitPlane.mAxis, bestSplitPlane.mAxisValue, front, back);
-  newVoxelizers.PushBack(front);
-  newVoxelizers.PushBack(back);
+  bool isSplit;
+  if (!mFast)
+    isSplit = voxelizer.Split(bestSplitPlane.mAxis, bestSplitPlane.mAxisValue, front, back);
+  else
+    isSplit = voxelizer.Split(bestSplitPlane.mAxis, bestSplitPlane.mAxisDiscretizedValue, front, back);
+  if (isSplit)
+  {
+    newVoxelizers.PushBack(front);
+    newVoxelizers.PushBack(back);
+  }
+  else
+  {
+    mFinalVoxelizers.PushBack(voxelizer);
+    return false;
+  }
   return true;
 }
 
@@ -275,12 +301,14 @@ void VHacd::ComputePossibleSplitPlanes(Voxelizer& voxelizer, Array<SplitPlane>& 
       Integer3 voxelCoord = Integer3::cZero;
       voxelCoord[axis] = i;
       Aabb aabb = voxelizer.GetVoxelAabb(voxelCoord);
-      planes.PushBack(SplitPlane(axis, aabb.GetCenter()[axis]));
+      SplitPlane splitPlane(axis, aabb.GetCenter()[axis]);
+      splitPlane.mAxisDiscretizedValue = i;
+      planes.PushBack(splitPlane);
     }
   }
 }
 
-VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity)
+bool VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity, SplitPlane& result)
 {
   size_t bestPlaneIndex = 0;
   float bestScore = Math::PositiveMax();
@@ -298,7 +326,149 @@ VHacd::SplitPlane VHacd::FindBestSplitPlane(Voxelizer& voxelizer, Array<SplitPla
     }
   }
 
-  return planes[bestPlaneIndex];
+  result = planes[bestPlaneIndex];
+  return true;
+}
+
+bool VHacd::FindBestSplitPlaneNew(Voxelizer& voxelizer, Array<SplitPlane>& planes, Real parentConcavity, SplitPlane& result)
+{
+  // Keep track that we actually found a valid split plane (the sub-divisions might be too small for our refinement)
+  bool splitPlaneFound = false;
+  float bestScore = Math::PositiveMax();
+  SplitPlane bestSplitPlane;
+  
+  // For each axis, find all of the possible split volume values and keep track of the best scoring one.
+  for (size_t axis = 0; axis < 3; ++axis)
+  {
+    Array<SplitData> axisSplitData;
+    GetSplitVolumes(voxelizer, axis, axisSplitData);
+
+    // Find which split plane on this axis is the best (of all axes tried so far)
+    for (size_t i = 0; i < axisSplitData.Size(); ++i)
+    {
+      SplitData& splitData = axisSplitData[i];
+
+      Real score = ComputeScore(splitData, axis, voxelizer, parentConcavity);
+      if (score < bestScore)
+      {
+        bestScore = score;
+        bestSplitPlane = SplitPlane(axis, splitData.mSplitValue);
+        bestSplitPlane.mAxisDiscretizedValue = splitData.mFrontIndex;
+        splitPlaneFound = true;
+      }
+    }
+  }
+
+  result = bestSplitPlane;
+  return splitPlaneFound;
+}
+
+void VHacd::GetSplitVolumes(Voxelizer& voxelizer, int axis, Array<SplitData>& splitDataList)
+{
+  // To efficiently compute the best split plane on an axis, we can incrementally build 2 convex hulls,
+  // one going back-to-front and the other going front-to-back. This avoids having to recompute a
+  // lot of convex hull data and drastically speeds up the search.
+  Zero::IncrementalQuickHull3D hullFront;
+  Zero::IncrementalQuickHull3D hullBack;
+  // Needed to compute the volume of a convex hull
+  QuickHull bakedHull;
+
+  // Compute all of the split indices to test add given our sub-division count
+  size_t offset = mRefinementStep;
+  int axisSubDivisions = voxelizer.mSubDivisions[axis];
+  int lastAxisIndex = axisSubDivisions - 1;
+  Array<int> indices;
+  for (int i = 0; i < axisSubDivisions; i += offset)
+    indices.PushBack(i);
+  
+  // Always add the last possible index if it doesn't create a duplicate. This is needed for the back-to-front set.
+  if(indices.Back() != lastAxisIndex)
+    indices.PushBack(lastAxisIndex);
+
+  // As two of the split indices are always 0 and the last index, if we only have 2 then there's nothing to do.
+  int total = indices.Size();
+  if (total < 2)
+    return;
+
+  // Since the indices is padded with the first and last index, the actual possible split plane count is the total - 2.
+  int count = total - 2;
+  splitDataList.Resize(count);
+
+  // These are cached outside the loop so memory will be re-used
+  Array<Real3> surfaceVoxelCenters;
+  Array<Real3> points;
+
+  // Keep track of the accumulated volume for each side as we iterate
+  Real accumulatedLeftVolume = 0;
+  Real accumulatedRightVolume = 0;
+  for (int i = 0; i < count; ++i)
+  {
+    // Compute the indices into the splitDataList for both sides
+    int leftIndex = i;
+    int rightIndex = count - i - 1;
+    SplitData& leftSplitData = splitDataList[leftIndex];
+    SplitData& rightSplitData = splitDataList[rightIndex];
+
+    // Compute the current sub-range of indices for the left side. The left side is inclusive on the boundary
+    // (e.g. it includes the end point) otherwise we'd miss some data. This would cause duplicate testing on
+    // the start though so we have to make the start exclusive (except on the first pass we have to make sure to include 0)
+    int leftStart = indices[i];
+    int leftEnd = indices[i + 1];
+    if (i != 0)
+      ++leftStart;
+    
+    // Compute the sub-range on the right side. The right sides range is [start, end)
+    int rightStart = indices[total - i - 1];
+    int rightEnd = indices[total - i - 2];
+    
+    // Set the split point for the split data. This is only needs to be computed for one of the passes
+    Integer3 voxelCoord = Integer3::cZero;
+    voxelCoord[axis] = leftEnd;
+    Aabb aabb = voxelizer.GetVoxelAabb(voxelCoord);
+    leftSplitData.mSplitValue = aabb.GetCenter()[axis];
+    leftSplitData.mFrontIndex = leftEnd;
+
+    bool success;
+
+    // Attempt to split the left side. This side needs to be inclusive on the end so add one.
+    Real leftSubVolume = 0;
+    surfaceVoxelCenters.Clear();
+    success = voxelizer.GetSplitTest(axis, leftStart, leftEnd + 1, surfaceVoxelCenters, leftSubVolume);
+    // If this is a valid split (there were voxels) then record volume information
+    if (success)
+    {
+      // Accumulate total volume
+      accumulatedLeftVolume += leftSubVolume;
+      leftSplitData.mFrontVoxelVolume = accumulatedLeftVolume;
+
+      // Incrementally expand this side's hull
+      points.Clear();
+      voxelizer.AabbCentersToPoints(surfaceVoxelCenters, points);
+      hullFront.Expand(points);
+      // Compute the total hull's volume
+      bakedHull.BakeHull(hullFront);
+      leftSplitData.mFrontHullVolume = bakedHull.ComputeVolume();
+    }
+
+    // Now do the same for the right side.
+    Real rightSubVolume = 0;
+    surfaceVoxelCenters.Clear();
+    success = voxelizer.GetSplitTest(axis, rightStart, rightEnd, surfaceVoxelCenters, rightSubVolume);
+    if (success)
+    {
+      // Accumulate total volume
+      accumulatedRightVolume += rightSubVolume;
+      rightSplitData.mBackVoxelVolume = accumulatedRightVolume;
+
+      // Incrementally expand this side's hull
+      points.Clear();
+      voxelizer.AabbCentersToPoints(surfaceVoxelCenters, points);
+      hullBack.Expand(points);
+      // Compute the total hull's volume
+      bakedHull.BakeHull(hullBack);
+      rightSplitData.mBackHullVolume = bakedHull.ComputeVolume();
+    }
+  }
 }
 
 float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue, Real parentConcavity)
@@ -315,15 +485,33 @@ float VHacd::TestSplit(Voxelizer& voxelizer, int axis, Real axisValue, Real pare
     return Math::PositiveMax();
 
   // Build the convex hull of both split sides
-  QuickHull frontHull, backHull;
+  QuickHull frontHull;
+  QuickHull backHull;
+  frontHull.Clear();
+  backHull.Clear();
+  
   frontHull.Build(front);
   backHull.Build(back);
 
+  SplitData splitData;
+  splitData.mFrontHullVolume = frontHull.ComputeVolume();
+  splitData.mFrontVoxelVolume = front.ComputeVolume();
+  splitData.mBackHullVolume = backHull.ComputeVolume();
+  splitData.mBackVoxelVolume = back.ComputeVolume();
+  return ComputeScore(splitData, axis, voxelizer, parentConcavity);
+}
+
+float VHacd::ComputeScore(SplitData& splitData, int axis, Voxelizer& voxelizer, Real parentConcavity)
+{
   // Compute the voxel volume and convex hull volume of both sides.
-  Real frontVoxelVolume = front.ComputeVolume();
-  Real backVoxelVolume = back.ComputeVolume();
-  Real frontHullVolume = frontHull.ComputeVolume();
-  Real backHullVolume = backHull.ComputeVolume();
+  Real frontVoxelVolume = splitData.mFrontVoxelVolume;
+  Real backVoxelVolume = splitData.mBackVoxelVolume;
+  Real frontHullVolume = splitData.mFrontHullVolume;
+  Real backHullVolume = splitData.mBackHullVolume;
+
+  // This split has a completely lop-sided grid. There's no reason to compute the score as this is as bad as possible.
+  if (backVoxelVolume == 0 || frontVoxelVolume == 0)
+    return Math::PositiveMax();
 
   // The heuristic for HACD is split up into 3 pieces:
   // (all of these are normalized by the initial convex hull's volume

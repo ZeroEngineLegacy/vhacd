@@ -15,7 +15,7 @@ public:
 
   Real ComputeVolume();
 
-  void BakeHull(Zero::QuickHull3D& quickHull);
+  void BakeHull(Zero::IncrementalQuickHull3D& quickHull);
 
   Zilch::HandleOf<ZeroEngine::QuickHull3D> ToHandle();
 

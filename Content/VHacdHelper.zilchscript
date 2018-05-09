@@ -26,7 +26,7 @@ class VHacdHelper : ZilchComponent
     this.Cancel();
   }
   
-  function Run()
+  [Display] function Run()
   {
     timeout(1000)
     {
@@ -44,7 +44,7 @@ class VHacdHelper : ZilchComponent
     }
   }
   
-  function Cancel()
+  [Display] function Cancel()
   {
     if(this.Mode == VHacdMode.Zero)
       this.CancelZeroVHacd();
